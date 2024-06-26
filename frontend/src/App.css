@@ -1,0 +1,43 @@
+.App {
+    text-align: center;
+    background-color: rgb(254, 218, 232);
+}
+
+.info-bantu {
+    background-color: #ffffff;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    line-height: 10 rem;
+    width: 65%;
+    margin: auto;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    font-weight: normal;
+}
+
+.package-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #000000;
+    background-color: #ffffff;
+    padding: 10px;
+    width: 65%;
+    margin-bottom: 10px;
+    margin-left: 17.5%;
+}
+
+.package-info {
+    flex: 1;
+}
+
+.button-container button {
+    background-color: #f68b1e;
+    color: #fff;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
