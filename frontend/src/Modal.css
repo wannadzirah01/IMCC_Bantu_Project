@@ -1,0 +1,94 @@
+/* modal.css */
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    border-color: #000000;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    max-width: 600px; /* Adjust this value as needed */
+    max-height: 80%;
+    overflow-y: auto;
+}
+
+.modal h3 {
+    text-align: center;
+}
+
+.modal form {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal label {
+    margin-bottom: 10px;
+}
+
+.modal input[type="text"],
+.modal input[type="Email"],
+.modal input[type="File"],
+.modal input[type="Date"],
+.modal input[type="Time"],
+.modal input[type="VarChar(255)"],
+.modal select,
+.modal textarea {
+    padding: 8px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 300px;
+}
+
+.modal button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.modal button:hover {
+    background-color: #0056b3;
+}
+
+.modal button[type="button"] {
+    background-color: #6c757d;
+}
+
+.modal button[type="button"]:hover {
+    background-color: #5a6268;
+}
+
+.detail-row{
+    margin-bottom: 1%;
+    max-width: 500px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.detail-row label {
+    flex: 1; /* Let the label take as much space as it needs */
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.detail-row input,
+.detail-row textarea {
+    flex: 2; /* Let the input take remaining space */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}

@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import PackageFormModal from "../components/PackageFormModal";
 
 function PackageList() {
     const [packages, setPackages] = useState([]);
+    const [selectedPackageId, setSelectedPackageId] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchPackages = async () => {
@@ -20,8 +23,14 @@ function PackageList() {
         fetchPackages();
     }, []);
 
-    const handleTicket = async (packageId) => {
+    const handleTicket = (packageId) => {
+        setSelectedPackageId(packageId);
+        setIsModalOpen(true);
+    };
 
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedPackageId(null);
     };
 
     return (
@@ -48,6 +57,11 @@ function PackageList() {
                     </div>
                 </div>
             ))}
+            <PackageFormModal
+                isOpen={isModalOpen}
+                onRequestClose={closeModal}
+                packageId={selectedPackageId}
+            />
         </div>
     );
 }

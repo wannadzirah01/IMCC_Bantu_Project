@@ -41,3 +41,11 @@
     cursor: pointer;
     border-radius: 5px;
 }
+
+.details-row {
+    margin-bottom: 10px;
+}
+
+.package-details-form {
+    background-color: cadetblue;
+}
