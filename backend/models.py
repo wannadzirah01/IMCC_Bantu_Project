@@ -2,11 +2,52 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
 import pytz
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 ma = Marshmallow()
 
 malaysia_timezone = pytz.timezone('Asia/Kuala_Lumpur')
+
+
+class Users(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    phone_number = db.Column(db.String(20), nullable=True)
+    user_role = db.Column(db.String(50), nullable=False)
+
+    __mapper_args__ = {
+        'polymorphic_on': user_role,
+        'polymorphic_identity': 'user'
+    }
+
+
+class Admins(Users):
+    __tablename__ = 'admins'
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'admin'
+    }
+
+
+class Mentor(Users):
+    __tablename__ = 'mentor'
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    matric_num = db.Column(db.String(255), nullable=True)
+    school = db.Column(db.String(255), nullable=True)
+    is_available = db.Column(db.Boolean, default=True)
+    gender = db.Column(db.String(50), nullable=True)
+    country = db.Column(db.String(100), nullable=True)
+    language_1 = db.Column(db.String(100), nullable=True)
+    language_2 = db.Column(db.String(100), nullable=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'mentor'
+    }
 
 
 class Packages(db.Model):
@@ -79,3 +120,36 @@ class TicketDetails(db.Model):
 
     detail = db.relationship('Details', backref='ticket_details')
     ticket = db.relationship('Tickets', backref='ticket_details')
+
+
+class Matching(db.Model):
+    __tablename__ = 'matching'
+    matching_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    mentor_id = db.Column(db.Integer, db.ForeignKey(
+        'mentor.id'), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey(
+        'clients.client_id'), nullable=False)
+    matching_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    mentor = db.relationship('Mentor', backref='matchings')
+    client = db.relationship('Clients', backref='matchings')
+
+
+class Feedback(db.Model):
+    __tablename__ = 'feedback'
+    feedback_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    feedback_desc = db.Column(db.String(500), nullable=True)
+    feedback_date = db.Column(db.DateTime, default=datetime.utcnow)
+    matching_status = db.Column(db.String(255), nullable=True)
+    accessibility_rating = db.Column(db.Integer, nullable=True)
+    initiation_rating = db.Column(db.Integer, nullable=True)
+    communication_rating = db.Column(db.Integer, nullable=True)
+    knowledge_rating = db.Column(db.Integer, nullable=True)
+    behaviour_rating = db.Column(db.Integer, nullable=True)
+    friendliness_rating = db.Column(db.Integer, nullable=True)
+    effort_rating = db.Column(db.Integer, nullable=True)
+    overall_rating = db.Column(db.Integer, nullable=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey(
+        'tickets.ticket_id'), nullable=False)
+
+    ticket = db.relationship('Tickets', backref='feedbacks')
