@@ -91,9 +91,20 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
+                    withCredentials: true, // Include withCredentials here
                 }
             );
             console.log("Form submitted successfully:", response.data);
+            // Reset all form fields
+            setName("");
+            setEmail("");
+            setPhoneNum("");
+            setGender("");
+            setCountry("");
+            setLanguage1("");
+            setLanguage2("");
+            setFile(null);
+            setFormData({});
             onRequestClose();
         } catch (error) {
             console.error("Error submitting form:", error);

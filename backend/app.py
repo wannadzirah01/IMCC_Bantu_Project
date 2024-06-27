@@ -223,6 +223,11 @@ def create_new_ticket():
     language1 = data.get('language1', None)
     language2 = data.get('language2', None)
 
+    # Ensure package_id exists in the Packages table
+    package = Packages.query.get(package_id)
+    if not package:
+        return jsonify({'error': 'Invalid package ID'}), 400
+
     # Create a new client
     new_client = Clients(
         client_name=client_name,
@@ -248,8 +253,7 @@ def create_new_ticket():
     # Save the dynamic details
     for detail_name, detail_value in data.items():
         if detail_name not in ['name', 'email', 'phone_num', 'package_id', 'gender', 'country', 'language1', 'language2']:
-            detail_entry = Details.query.filter_by(
-                detail_name=detail_name).first()
+            detail_entry = Details.query.filter_by(detail_name=detail_name).first()
             if detail_entry:
                 ticket_detail = TicketDetails(
                     ticket_id=new_ticket.ticket_id,
