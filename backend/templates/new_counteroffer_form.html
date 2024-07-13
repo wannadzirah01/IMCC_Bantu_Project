@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit New Counteroffer</title>
+</head>
+<body>
+    <h1>Submit New Counteroffer</h1>
+    <form id="counterofferForm">
+        <input type="hidden" name="ticket_id" value="{{ ticket_id }}">
+        <div id="detailsContainer">
+            {% for detail in details_list %}
+            <div class="detail">
+                <label for="detail_name_{{ loop.index0 }}">Detail Name:</label>
+                <input type="text" id="detail_name_{{ loop.index0 }}" name="details[{{ loop.index0 }}][detail_name]" value="{{ detail.detail_name }}" readonly required>
+                <label for="value_{{ loop.index0 }}">Value:</label>
+                {% if detail.detail_type == 'Date' %}
+                    <input type="date" id="value_{{ loop.index0 }}" name="details[{{ loop.index0 }}][value]" required>
+                {% elif detail.detail_type == 'Time' %}
+                    <input type="time" id="value_{{ loop.index0 }}" name="details[{{ loop.index0 }}][value]" required>
+                {% else %}
+                    <input type="text" id="value_{{ loop.index0 }}" name="details[{{ loop.index0 }}][value]" required>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.getElementById('counterofferForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = { details: [] };
+
+            for (let [name, value] of formData.entries()) {
+                const match = name.match(/details\[(\d+)\]\[(\w+)\]/);
+                if (match) {
+                    const index = match[1];
+                    const key = match[2];
+                    if (!data.details[index]) {
+                        data.details[index] = {};
+                    }
+                    data.details[index][key] = value;
+                }
+            }
+
+            fetch(`/clientRejection?ticket_id=${formData.get('ticket_id')}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message || result.error);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

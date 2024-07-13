@@ -37,6 +37,9 @@ function NavBar({ userRole, setUserRole }) {
                 IMCC Bantu: 1 to 1
             </Link>
             <ul>
+                <CustomLink to="/packageListing">
+                    Bantu 1-to-1 Package
+                </CustomLink>
                 <CustomLink to="/user">User</CustomLink>
                 <CustomLink to="/matching">Matching</CustomLink>
                 <CustomLink to="/ticketManagement">

@@ -16,6 +16,8 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
     const [language1, setLanguage1] = useState("");
     const [language2, setLanguage2] = useState("");
     const [file, setFile] = useState(null);
+    const [matricNum, setMatricNum] = useState("");
+    const [school, setSchool] = useState("");
 
     useEffect(() => {
         const fetchPackageDetails = async () => {
@@ -58,6 +60,10 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
             setLanguage1(value);
         } else if (name === "language2") {
             setLanguage2(value);
+        } else if (name === "matricNum") {
+            setMatricNum(value);
+        } else if (name === "school") {
+            setSchool(value);
         } else {
             setFormData({
                 ...formData,
@@ -79,6 +85,8 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
         formDataToSend.append("country", country); // Add country
         formDataToSend.append("language1", language1); // Add language1
         formDataToSend.append("language2", language2); // Add language2
+        formDataToSend.append("matric_num", matricNum);
+        formDataToSend.append("school", school); 
         Object.entries(formData).forEach(([key, value]) => {
             formDataToSend.append(key, value);
         });
@@ -103,6 +111,8 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
             setCountry("");
             setLanguage1("");
             setLanguage2("");
+            setMatricNum("");
+            setSchool("");
             setFile(null);
             setFormData({});
             onRequestClose();
@@ -151,6 +161,26 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
                 </div>
                 {[1, 4, 5, 6].includes(packageId) && (
                     <>
+                        <div className="detail-row">
+                            <label>Matric Number: </label>
+                            <input
+                                type="text"
+                                name="matricNum"
+                                value={matricNum}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="detail-row">
+                            <label>School: </label>
+                            <input
+                                type="text"
+                                name="school"
+                                value={school}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
                         <div className="detail-row">
                             <label>Gender: </label>
                             <select

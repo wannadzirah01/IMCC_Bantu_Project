@@ -1,0 +1,95 @@
+/* TicketManagement.css */
+
+.table-container {
+    margin: 20px auto;
+    width: 80%;
+    max-width: 1000px;
+    border-collapse: collapse;
+  }
+  
+  .table-container table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table-container th, .table-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .table-container th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  .table-container tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .table-container tr:hover {
+    background-color: #ddd;
+  }
+  
+  .table-container td div {
+    margin: 5px 0;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  button {
+    padding: 5px 10px;
+    cursor: pointer;
+    border: none;
+    color: #fff;
+  }
+  
+  button.approve {
+    background-color: #4CAF50;
+  }
+  
+  button.reject {
+    background-color: #f44336;
+  }
+  
+  /* Modal styles */
+  .ReactModal__Overlay {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+  }
+  
+  .ReactModal__Content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 4px;
+    outline: none;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* TicketManagement.css */
+
+button.reject.disabled,
+button.approve.disabled {
+    background-color: gray;
+    cursor: not-allowed;
+}
+
+button.reject:not(.disabled) {
+    background-color: red;
+    cursor: pointer;
+}
+
+button.approve:not(.disabled) {
+    background-color: green;
+    cursor: pointer;
+}

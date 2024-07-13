@@ -87,6 +87,9 @@ class Clients(db.Model):
     country = db.Column(db.String(255), nullable=True)
     language1 = db.Column(db.String(255), nullable=True)
     language2 = db.Column(db.String(255), nullable=True)
+    school = db.Column(db.String(255), nullable=True)
+    matric_num = db.Column(db.String(255), nullable=True)
+    is_available = db.Column(db.Boolean, default=True)
 
 
 class Tickets(db.Model):
@@ -103,9 +106,11 @@ class Tickets(db.Model):
         db.DateTime, default=lambda: datetime.now(malaysia_timezone))
     updated_datetime = db.Column(
         db.DateTime, default=lambda: datetime.now(malaysia_timezone))
+    matching_id = db.Column(db.Integer, db.ForeignKey('matching.matching_id'), nullable=True)
 
     package = db.relationship('Packages', backref='tickets')
     client = db.relationship('Clients', backref='tickets')
+    matching = db.relationship('Matching', backref="tickets")
 
 
 class TicketDetails(db.Model):
