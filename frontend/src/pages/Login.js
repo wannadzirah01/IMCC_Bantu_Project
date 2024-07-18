@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import "../App.css";
 
@@ -24,9 +24,7 @@ const Login = ({ setUserRole }) => {
             );
             setUserRole(userRoleResponse.data.role);
 
-            if (userRoleResponse.data.role === "mentor") {
-                navigate("/matching");
-            } else if (userRoleResponse.data.role === "admin") {
+            if (userRoleResponse.data.role === "admin") {
                 navigate("/ticketManagement");
             }
         } catch (err) {
@@ -41,32 +39,32 @@ const Login = ({ setUserRole }) => {
             <div className="auth-form-container">
                 <form className="login-form" onSubmit={handleSubmit}>
                     <h2>Log In</h2>
-                    <label htmlFor="email">Email</label>
-                    <input
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        type="email"
-                        placeholder="Please enter your email"
-                        id="email"
-                        name="email"
-                    />
-                    <label htmlFor="password">Password</label>
-                    <input
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        type="password"
-                        placeholder="Please enter your password"
-                        id="password"
-                        name="password"
-                    />
-                    <div className="divider" />
-                    <div className="button-general">
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            type="email"
+                            placeholder="Please enter your email"
+                            id="email"
+                            name="email"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            type="password"
+                            placeholder="Please enter your password"
+                            id="password"
+                            name="password"
+                        />
+                    </div>
+                    <div className="button-container">
                         <button type="submit">Login</button>
                     </div>
                 </form>
-                <Link to="/register" className="link-btn">
-                    Don't have an account? Register
-                </Link>
             </div>
         </div>
     );

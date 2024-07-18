@@ -86,25 +86,19 @@ def load_user(user_id):
 
 
 @app.route('/register', methods=['POST'])
+@login_required
+@admin_required
 def register_user():
     try:
         data = request.json
         email = data["email"]
         password = data["password"]
         name = data["name"]
-        matric_number = data.get("matricNumber")
         phone_number = data["phoneNumber"]
-        school = data["school"]
-        is_available = data.get("isAvailable", True)
-        gender = data.get("gender")
-        country = data.get("country")
-        language_1 = data.get("language1")
-        language_2 = data.get("language2")
 
-        if email.endswith("@usm.my"):
-            role = "admin"
-        else:
-            role = "mentor"
+        # Check if the current user is the initial admin or another admin
+        if current_user.email != "imccbantu@usm.my":
+            return jsonify({"error": "Unauthorized to register new admins"}), 403
 
         if Users.query.filter_by(email=email).first():
             return jsonify({"error": "User already exists"}), 400
@@ -112,48 +106,23 @@ def register_user():
         hashed_password = bcrypt.generate_password_hash(
             password).decode('utf-8')
 
-        if role == "admin":
-            new_user = Admins(
-                email=email,
-                password=hashed_password,
-                name=name,
-                phone_number=phone_number,
-                user_role=role
-            )
-        else:
-            new_user = Mentor(
-                email=email,
-                password=hashed_password,
-                name=name,
-                phone_number=phone_number,
-                user_role=role,
-                matric_num=matric_number,
-                school=school,
-                is_available=is_available,
-                gender=gender,
-                country=country,
-                language_1=language_1,
-                language_2=language_2
-            )
+        new_user = Admins(
+            email=email,
+            password=hashed_password,
+            name=name,
+            phone_number=phone_number,
+            user_role="admin"
+        )
 
         db.session.add(new_user)
         db.session.commit()
-
-        session["user_id"] = new_user.id
 
         return jsonify({
             "id": new_user.id,
             "email": new_user.email,
             "name": new_user.name,
-            "matric_number": getattr(new_user, 'matric_num', None),
             "phone_number": new_user.phone_number,
-            "school": getattr(new_user, 'school', None),
-            "is_available": getattr(new_user, 'is_available', None),
-            "gender": getattr(new_user, 'gender', None),
-            "country": getattr(new_user, 'country', None),
-            "language1": getattr(new_user, 'language_1', None),
-            "language2": getattr(new_user, 'language_2', None),
-            "role": role
+            "role": "admin"
         })
     except Exception as e:
         db.session.rollback()
@@ -181,6 +150,42 @@ def login_user_route():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/changePassword', methods=['POST'])
+@login_required
+def change_password():
+    try:
+        data = request.json
+        current_password = data["currentPassword"]
+        new_password = data["newPassword"]
+
+        if not bcrypt.check_password_hash(current_user.password, current_password):
+            return jsonify({"error": "Invalid current password"}), 401
+
+        hashed_password = bcrypt.generate_password_hash(
+            new_password).decode('utf-8')
+        current_user.password = hashed_password
+        db.session.commit()
+
+        return jsonify({"message": "Password changed successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/getAdmins', methods=['GET'])
+@login_required
+@admin_required
+def get_admins():
+    admins = Admins.query.all()
+    admin_list = [{
+        "id": admin.id,
+        "name": admin.name,
+        "email": admin.email,
+        "phone_number": admin.phone_number
+    } for admin in admins]
+    return jsonify(admin_list), 200
 
 
 @app.route('/getUserRole', methods=['GET'])
@@ -426,7 +431,7 @@ def get_ticket_details(ticket_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 
 @app.route('/activateTicket/<int:ticket_id>', methods=['POST'])
 def activate_ticket(ticket_id):
@@ -441,7 +446,7 @@ def activate_ticket(ticket_id):
             return jsonify({"error": "Ticket not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 
 def generate_email_body(ticket, status_comment=None):
     body = f"Dear {ticket.client.client_name},\n\n"

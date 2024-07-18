@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../api/axios";
+import { Link } from "react-router-dom";
+import "../User.css";
 
 const User = () => {
     const [userData, setUserData] = useState(null);
@@ -70,6 +72,11 @@ const User = () => {
                         </p>
                     </>
                 )}
+                <div className="button-container">
+                    <Link to="/changePassword" className="button">
+                        Change Password
+                    </Link>
+                </div>
             </div>
         </div>
     ) : (

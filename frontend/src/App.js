@@ -9,6 +9,8 @@ import PackageListing from "./pages/PackageListing";
 import Matching from "./pages/Matching";
 import TicketManagement from "./pages/TicketManagement";
 import User from "./pages/User";
+import RegisterAdmin from "./pages/RegisterAdmin";
+import ChangePassword from "./components/ChangePassword";
 // import MatchingListing from "./pages/MatchingListing";
 
 const App = () => {
@@ -50,6 +52,8 @@ const App = () => {
                         element={<TicketManagement />}
                     />
                     <Route path="/user" element={<User />} />
+                    <Route path="/registerAdmin" element={<RegisterAdmin />} />
+                    <Route path="/changePassword" element={<ChangePassword />} />
                     {/* <Route path="/matchingListing" element={<MatchingListing />} /> */}
                 </Routes>
             </BrowserRouter>

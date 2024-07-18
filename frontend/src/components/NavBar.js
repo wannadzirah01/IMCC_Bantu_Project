@@ -49,6 +49,9 @@ function NavBar({ userRole, setUserRole }) {
                         <CustomLink to="/ticketManagement">
                             Ticket Management
                         </CustomLink>
+                        <CustomLink to="/registerAdmin">
+                            Register Admin
+                        </CustomLink>
                         {/* <CustomLink to="/matchingListing">Mentor Management</CustomLink> */}
                     </>
                 )}
