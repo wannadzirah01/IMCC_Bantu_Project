@@ -410,7 +410,8 @@ def get_all_tickets():
         status_mapping = {
             "Pending": ["Pending Approval", "Pending Client Response"],
             "Active": ["Active"],
-            "Completed": ["Completed"]
+            "Completed": ["Completed"],
+            "Cancelled": ["Cancelled"]
         }
 
         if status_filter and status_filter[0] != "All":
