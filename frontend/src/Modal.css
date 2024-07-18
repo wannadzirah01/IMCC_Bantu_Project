@@ -30,7 +30,7 @@
 
 .modal input[type="text"],
 .modal input[type="Email"],
-.modal input[type="File"],
+/* .modal input[type="File"], */
 .modal input[type="Date"],
 .modal input[type="Time"],
 .modal input[type="VarChar(255)"],
@@ -67,7 +67,7 @@
     background-color: #5a6268;
 }
 
-.detail-row{
+.detail-row {
     margin-bottom: 1%;
     max-width: 500px;
 }
@@ -79,16 +79,118 @@
 }
 
 .detail-row label {
-    flex: 1; /* Let the label take as much space as it needs */
+    flex: 1;
     margin-right: 10px;
     font-weight: bold;
 }
 
 .detail-row input,
 .detail-row textarea {
-    flex: 2; /* Let the input take remaining space */
+    flex: 2;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
 }
+
+.modal {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.file-upload {
+    margin-bottom: 20px;
+}
+
+.dropzone {
+    border: 2px dashed #007bff;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.dropzone p {
+    margin: 0;
+    color: #6c757d;
+}
+
+textarea {
+    margin-top: 10px;
+}
+
+button[type="submit"],
+button[type="button"] {
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="button"] {
+    background-color: #6c757d;
+}
+
+button[type="submit"]:hover,
+button[type="button"]:hover {
+    opacity: 0.9;
+}
+
+button.activate {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+button.activate.disabled {
+    background-color: grey;
+    cursor: not-allowed;
+}
+.edit-details-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.edit-details-container input[type="checkbox"] {
+    margin-right: 5px; 
+    margin-left: 0; 
+}
+
+.edit-details-container label {
+    white-space: nowrap; 
+    margin: 0;
+}
+
+.ticket-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.ticket-details .detail {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; 
+}
+
+.ticket-details .detail label {
+    width: 150px;
+    margin-right: 10px; 
+}
+
+.ticket-details .detail input {
+    flex: 1;
+    height: 30px; 
+    padding: 5px; 
+}
+

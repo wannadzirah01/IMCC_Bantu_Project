@@ -135,6 +135,7 @@ class Matching(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey(
         'clients.client_id'), nullable=False)
     matching_date = db.Column(db.DateTime, default=datetime.utcnow)
+    matching_status = db.Column(db.String(255))
 
     mentor = db.relationship('Mentor', backref='matchings')
     client = db.relationship('Clients', backref='matchings')

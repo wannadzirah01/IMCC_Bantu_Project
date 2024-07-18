@@ -37,11 +37,10 @@ function PackageList() {
         <div>
             <h2>Bantu 1-to-1 Packages</h2>
             <h5 className="info-bantu">
-                Please upload the receipt for the Bantu 1-to-1 package that you
-                have purchased. Once uploaded you can monitor their status in
-                the service status section. After the receipt has been approved,
-                you can provide the necessary details for the Bantu 1-to-1
-                service. Your cooperation is much appreciated. Thank you.
+                Welcome to the Bantu 1-to-1 Service Ticketing! To get started,
+                please select the package you purchased. For a specific package,
+                kindly submit your receipt along with the required details. All
+                updates regarding your submitted ticket will be sent via email.
             </h5>
             {packages.map((packageItem) => (
                 <div key={packageItem.id} className="package-container">

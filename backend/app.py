@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from flask import Flask, request, jsonify, url_for
 import bcrypt
+import json
 from flask import Flask, jsonify, request, session, url_for, send_from_directory, render_template
 from models import db, Packages, Details, PackageDetails, Tickets, TicketDetails, Clients, Users, Mentor, Admins, Matching
 from config import ApplicationConfig
@@ -22,6 +23,8 @@ from datetime import timedelta, datetime
 import pytz
 from sqlalchemy.orm import joinedload
 import logging
+from flask_mail import Message
+from werkzeug.datastructures import FileStorage
 
 logging.basicConfig()
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -75,55 +78,6 @@ login_manager.init_app(app)
 def send_email(to, subject, body):
     msg = Message(subject, recipients=[to], html=body)
     mail.send(msg)
-
-
-def get_student_data():
-    with app.app_context():
-        students = Mentor.query.filter_by(is_available=True).with_entities(
-            Mentor.id,
-            Mentor.name,
-            Mentor.matric_num,
-            Mentor.gender,
-            Mentor.country,
-            Mentor.school,
-            Mentor.language_1,
-            Mentor.language_2
-        ).all()
-
-    print("Retrieved Students:", students)
-
-    student_df = pd.DataFrame(students, columns=[
-                              'id', 'name', 'matric_no', 'gender', 'country', 'school', 'language_1', 'language_2'])
-    return student_df
-
-
-def find_top_matches(input_data, n=3):
-    # Get the student data
-    student_df = get_student_data()
-
-    # Select the columns to compare
-    columns_to_compare = ['gender', 'country',
-                          'school', 'language_1', 'language_2']
-
-    # One-hot encode the selected columns with handle_unknown='ignore'
-    encoder = OneHotEncoder(handle_unknown='ignore')
-    encoded_data = encoder.fit_transform(
-        student_df[columns_to_compare]).toarray()
-
-    # One-hot encode the input data
-    input_encoded = encoder.transform([input_data]).toarray()
-
-    # Calculate cosine similarity between the input data and the dataset
-    similarities = cosine_similarity(input_encoded, encoded_data).flatten()
-
-    # Get the indices of the top n most similar people
-    top_indices = np.argsort(similarities)[-n:][::-1]
-
-    # Get the top n most similar people from the dataframe
-    top_matches = student_df.iloc[top_indices].copy()
-    top_matches['Similarity'] = similarities[top_indices] * 100
-
-    return top_matches[['id', 'name', 'matric_no', 'gender', 'country', 'school', 'language_1', 'language_2', 'Similarity']]
 
 
 @login_manager.user_loader
@@ -297,17 +251,17 @@ def get_package_details(package_id):
 
 @app.route('/createNewTicket', methods=['POST'])
 def create_new_ticket():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part in the request'}), 400
+    # if 'file' not in request.files:
+    #     return jsonify({'error': 'No file part in the request'}), 400
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    # file = request.files['file']
+    # if file.filename == '':
+    #     return jsonify({'error': 'No selected file'}), 400
 
-    if file:
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+    # if file:
+    #     filename = secure_filename(file.filename)
+    #     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    #     file.save(file_path)
 
     data = request.form.to_dict()
     package_id = data.get('package_id')
@@ -345,7 +299,7 @@ def create_new_ticket():
     new_ticket = Tickets(
         package_id=package_id,
         client_id=new_client.client_id,
-        receipt_file_path=file_path,
+        # receipt_file_path=filename,
         ticket_status='Pending Approval'
     )
     db.session.add(new_ticket)
@@ -368,9 +322,9 @@ def create_new_ticket():
     return jsonify({'message': 'Form submitted successfully'})
 
 
-@app.route('/uploads/<path:filename>')
-def serve_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+# @app.route('/uploads/<filename>', methods=['GET'])
+# def serve_file(filename):
+#     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 @app.route('/getAllTickets', methods=['GET'])
@@ -385,14 +339,16 @@ def get_all_tickets():
 
         # Status mapping
         status_mapping = {
-            "Pending": ["Pending Approval", "Pending Client Approval"],
-            "Active": ["Approved"],
+            "Pending": ["Pending Approval", "Pending Client Response"],
+            "Active": ["Active"],
             "Completed": ["Completed"]
         }
 
         if status_filter and status_filter[0] != "All":
-            db_statuses = [status for s in status_filter for status in status_mapping.get(s, [])]
-            query = Tickets.query.filter(Tickets.ticket_status.in_(db_statuses))
+            db_statuses = [
+                status for s in status_filter for status in status_mapping.get(s, [])]
+            query = Tickets.query.filter(
+                Tickets.ticket_status.in_(db_statuses))
         else:
             query = Tickets.query
 
@@ -409,15 +365,20 @@ def get_all_tickets():
 
         ticket_list = []
         for ticket in tickets:
-            malaysia_time = ticket.updated_datetime.astimezone(malaysia_timezone)
-            
+            created_datetime = ticket.created_datetime.astimezone(
+                malaysia_timezone)
+
+            updated_datetime = ticket.updated_datetime.astimezone(
+                malaysia_timezone)
+
             ticket_list.append({
                 "ticket_id": ticket.ticket_id,
                 "ticket_status": ticket.ticket_status,
                 "package": ticket.package.title,
                 "user_name": ticket.client.client_name,
-                "created_datetime": malaysia_time.strftime('%Y-%m-%d %H:%M:%S'),
-                "file_name": ticket.receipt_file_path,
+                "created_datetime": created_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+                "updated_datetime": updated_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+                # "file_name": ticket.receipt_file_path,
                 "email": ticket.client.client_email,
                 "details": [{"detail_name": detail.detail.detail_name, "detail_type": detail.detail.detail_type, "value": detail.value}
                             for detail in ticket.ticket_details]
@@ -455,7 +416,8 @@ def get_ticket_details(ticket_id):
             "package": ticket.package.title,
             "user_name": ticket.client.client_name,
             "created_datetime": ticket.created_datetime.strftime('%Y-%m-%d %H:%M:%S'),
-            "file_name": ticket.receipt_file_path,
+            "updated_datetime": ticket.updated_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+            # "file_name": ticket.receipt_file_path,
             "email": ticket.client.client_email,
             "details": details_list
         }
@@ -464,83 +426,336 @@ def get_ticket_details(ticket_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/activateTicket/<int:ticket_id>', methods=['POST'])
+def activate_ticket(ticket_id):
+    # Logic to change the ticket status to 'Active'
+    try:
+        ticket = Tickets.query.get(ticket_id)
+        if ticket:
+            ticket.ticket_status = 'Active'
+            db.session.commit()
+            return jsonify({"message": "Ticket activated successfully"}), 200
+        else:
+            return jsonify({"error": "Ticket not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+def generate_email_body(ticket, status_comment=None):
+    body = f"Dear {ticket.client.client_name},\n\n"
+    body += f"""Your ticket with ID {ticket.ticket_id} for Package: {
+        ticket.package.title} has been approved. Here are the details:\n\n"""
+
+    ticket_details = TicketDetails.query.filter_by(
+        ticket_id=ticket.ticket_id).all()
+    for detail in ticket_details:
+        detail_name = Details.query.filter_by(
+            detail_id=detail.detail_id).first().detail_name
+        body += f"{detail_name}: {detail.value}\n"
+
+    if status_comment:
+        body += f"Remarks: {status_comment}\n\n"
+    else:
+        body += "\n"
+
+    body += "Please proceed to pay for the package to be subscribed using the QR code attached below. After that, kindly reply this email with the receipt that you received after completing the payment process.\n\n"
+    body += "Thank you,\nIMCC Admin"
+    return body
+
+
+# @app.route('/approveTicket/<int:ticket_id>', methods=['POST'])
+# @login_required
+# @admin_required
+# def review_ticket(ticket_id):
+#     data = request.form
+#     remarks = data.get('remarks')
+#     email_message = data.get('emailMessage')
+#     file = request.files.get('file')
+#     if file:
+#         print(f"Received file: {file.filename}")
+#     else:
+#         print("No file received")
+
+#     ticket = Tickets.query.get(ticket_id)
+#     if not ticket:
+#         return jsonify({"error": "Ticket not found"}), 404
+
+#     ticket.ticket_status = 'Pending Payment'
+#     ticket.status_comment = remarks
+#     db.session.commit()
+
+#     send_approval_email(ticket, email_message, file, remarks)
+
+#     try:
+#         db.session.commit()
+#         return jsonify({"message": "Ticket approved successfully"}), 200
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
 @app.route('/approveTicket/<int:ticket_id>', methods=['POST'])
 @login_required
 @admin_required
 def review_ticket(ticket_id):
-    data = request.get_json()
-    action = data.get('action')
+    data = request.form
+    remarks = data.get('remarks')
+    email_message = data.get('emailMessage')
+    file = request.files.get('file')
+    updated_details = data.get("updatedDetails")
 
-    if not action:
-        return jsonify({"error": "No action provided"}), 400
+    if file:
+        print(f"Received file: {file.filename}")
+    else:
+        print("No file received")
 
-    # Find the ticket
     ticket = Tickets.query.get(ticket_id)
     if not ticket:
         return jsonify({"error": "Ticket not found"}), 404
 
-    if action == 'approve':
-        ticket.ticket_status = 'Approved'
-        # Send email notification
-        send_approval_email(ticket)
+    if updated_details:
+        details = json.loads(updated_details)
+        TicketDetails.query.filter_by(ticket_id=ticket_id).delete()
+        for detail in details:
+            detail_record = Details.query.filter_by(
+                detail_name=detail['detail_name']).first()
+            if not detail_record:
+                detail_record = Details(
+                    detail_name=detail['detail_name'], detail_type="VarChar(255)")
+                db.session.add(detail_record)
+                db.session.flush()
+            new_ticket_detail = TicketDetails(
+                ticket_id=ticket_id,
+                detail_id=detail_record.detail_id,
+                value=detail['value']
+            )
+            db.session.add(new_ticket_detail)
+
+    ticket.ticket_status = 'Pending Payment'
+    ticket.status_comment = remarks
+    db.session.commit()
+
+    send_approval_email(ticket, email_message, file, remarks)
 
     try:
         db.session.commit()
-        return jsonify({"message": f"Ticket {action}d successfully"}), 200
+        return jsonify({"message": "Ticket approved successfully"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
-def send_approval_email(ticket):
-    # Prepare email content
+def send_approval_email(ticket, custom_message, file, status_comment):
     client_email = ticket.client.client_email
-    subject = "Your Ticket Has Been Approved"
-    body = f"""
-    <p>Dear {ticket.client.client_name},</p>
-    <p>Your ticket with ID {ticket.ticket_id} has been approved. Here are the details:</p>
-    <ul>
-    """
-    # Fetch ticket details
-    ticket_details = TicketDetails.query.filter_by(ticket_id=ticket.ticket_id).all()
-    for detail in ticket_details:
-        detail_name = Details.query.filter_by(
-            detail_id=detail.detail_id).first().detail_name
-        body += f"<li><strong>{detail_name}:</strong> {detail.value}</li>"
-    body += """
-    </ul>
-    <p>Thank you,</p>
-    <p>IMCC Admin</p>
-    """
+    subject = "IMCC Bantu 1-to-1 Notification"
 
-    # Send the email
+    body = custom_message if custom_message else generate_email_body(
+        ticket, status_comment)
+
     msg = Message(
         subject=subject,
         recipients=[client_email],
-        html=body
+        body=body
     )
-    mail.send(msg)
+
+    if file and isinstance(file, FileStorage):
+        print(f"Attaching file: {file.filename}")
+        msg.attach(file.filename, file.content_type, file.read())
+
+    try:
+        mail.send(msg)
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Failed to send email: {str(e)}")
 
 
-@app.route('/rejectTicket/<int:ticket_id>', methods=['PUT'])
+@app.route('/getEmailTemplate/<int:ticket_id>', methods=['GET'])
 @login_required
 @admin_required
-def update_ticket_details(ticket_id):
+def get_email_template(ticket_id):
+    ticket = Tickets.query.get(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    email_template = generate_email_body(ticket)
+    return jsonify({"emailTemplate": email_template}), 200
+
+
+@app.route('/updateTicket/<int:ticket_id>', methods=['PUT'])
+@login_required
+@admin_required
+def edit_ticket_details(ticket_id):
     data = request.get_json()
     details = data.get('details')
 
     if not details:
         return jsonify({"error": "No details provided"}), 400
 
+    ticket = Tickets.query.get(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    ticket.ticket_status = 'Active'
+
+    TicketDetails.query.filter_by(ticket_id=ticket_id).delete()
+
+    for detail in details:
+        detail_record = Details.query.filter_by(
+            detail_name=detail['detail_name']).first()
+        if not detail_record:
+            detail_record = Details(
+                detail_name=detail['detail_name'], detail_type="VarChar(255)")
+            db.session.add(detail_record)
+            db.session.flush()  # Get the new detail_id immediately
+
+        new_ticket_detail = TicketDetails(
+            ticket_id=ticket_id,
+            detail_id=detail_record.detail_id,
+            value=detail['value']
+        )
+        db.session.add(new_ticket_detail)
+
+    ticket.updated_datetime = datetime.now(malaysia_timezone)
+    db.session.commit()
+
+    return jsonify({"message": "Ticket rejected successfully"}), 200
+
+
+def generate_completion_email_body(ticket, status_comment=None):
+    body = f"Dear {ticket.client.client_name},\n\n"
+    body += f"""Your ticket with ID {ticket.ticket_id} for Package: {
+        ticket.package.title} has been successfully completed. Here are the details:\n\n"""
+
+    ticket_details = TicketDetails.query.filter_by(
+        ticket_id=ticket.ticket_id).all()
+    for detail in ticket_details:
+        detail_name = Details.query.filter_by(
+            detail_id=detail.detail_id).first().detail_name
+        body += f"{detail_name}: {detail.value}\n"
+
+    if status_comment:
+        body += f"Remarks: {status_comment}\n\n"
+    else:
+        body += "\n"
+
+    body += "Should you have any feedbacks regarding the service, please reply to this email.\n\n"
+    body += "Thank you,\nIMCC Admin"
+    return body
+
+
+@app.route('/completeTicket/<int:ticket_id>', methods=['POST'])
+@login_required
+@admin_required
+def complete_ticket(ticket_id):
+    data = request.form
+    # remarks = data.get('remarks')
+    email_message = data.get('emailMessage')
+    file = request.files.get('file')
+    if file:
+        print(f"Received file: {file.filename}")
+    else:
+        print("No file received")
+
+    ticket = Tickets.query.get(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    ticket.ticket_status = 'Completed'
+    # ticket.status_comment = remarks
+    db.session.commit()
+
+    send_completion_email(ticket, email_message, file)
+
     try:
+        db.session.commit()
+        return jsonify({"message": "Ticket completed successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Error: {str(e)}"}), 500
+
+
+def send_completion_email(ticket, custom_message, file):
+    client_email = ticket.client.client_email
+    subject = "IMCC Bantu 1-to-1 Notification"
+
+    body = custom_message if custom_message else generate_email_body(
+        ticket)
+
+    msg = Message(
+        subject=subject,
+        recipients=[client_email],
+        body=body
+    )
+
+    if file and isinstance(file, FileStorage):
+        print(f"Attaching file: {file.filename}")
+        msg.attach(file.filename, file.content_type, file.read())
+
+    try:
+        mail.send(msg)
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Failed to send email: {str(e)}")
+
+
+@app.route('/getCompletionEmailTemplate/<int:ticket_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_completion_email_template(ticket_id):
+    ticket = Tickets.query.get(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    email_template = generate_completion_email_body(ticket)
+    return jsonify({"emailTemplate": email_template}), 200
+
+
+@app.route('/getRejectionEmailTemplate/<int:ticket_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_rejection_email_template(ticket_id):
+    ticket = Tickets.query.get(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    email_template = generate_rejection_email_body(ticket)
+    return jsonify({"emailTemplate": email_template}), 200
+
+
+def generate_rejection_email_body(ticket):
+    body = f"Dear {ticket.client.client_name},\n\n"
+    body += f"""Your ticket with ID {ticket.ticket_id} for Package: {
+        ticket.package.title} has been updated with the following details:\n\n"""
+
+    ticket_details = TicketDetails.query.filter_by(
+        ticket_id=ticket.ticket_id).all()
+    for detail in ticket_details:
+        detail_name = Details.query.filter_by(
+            detail_id=detail.detail_id).first().detail_name
+        body += f"{detail_name}: {detail.value}\n"
+
+    body += "\nIf you agree with the new details, please proceed to pay for the package to be subscribed using the QR code attached below. After that, kindly reply to this email with the receipt that you received after completing the payment process. Else, please reply to this email whether you would like to suggest new details or cancel the Bantu 1-to-1 subscription.\n\n"
+    body += "Thank you,\nIMCC Admin"
+    return body
+
+
+@app.route('/rejectTicket/<int:ticket_id>', methods=['PUT'])
+@login_required
+@admin_required
+def reject_ticket(ticket_id):
+    try:
+        # Parse JSON part of the multipart form data
+        details = json.loads(request.form['details'])
+        email_template = request.form.get('emailTemplate')
+
         ticket = Tickets.query.get(ticket_id)
         if not ticket:
             return jsonify({"error": "Ticket not found"}), 404
 
-        # Update ticket status to "Rejected"
-        ticket.ticket_status = 'Pending Client Approval'
+        # Update ticket status to "Pending Client Response"
+        ticket.ticket_status = 'Pending Client Response'
 
         # Delete old ticket details
         TicketDetails.query.filter_by(ticket_id=ticket_id).delete()
@@ -565,221 +780,43 @@ def update_ticket_details(ticket_id):
 
         # Update the ticket's updated_datetime
         ticket.updated_datetime = datetime.now(malaysia_timezone)
+
+        # Handle file upload
+        file = request.files.get('file')
         db.session.commit()
 
-        # Prepare email content
-        client_email = ticket.client.client_email
-        subject = "IMCC Bantu 1-to-1 Ticket Update"
-        body = f"""
-        <p>Dear {ticket.client.client_name},</p>
-        <p>Your ticket details has been rejected. Please review the new details below:</p>
-        <ul>
-        """
-        for detail in details:
-            body += f"<li><strong>{detail['detail_name']
-                                   }:</strong> {detail['value']}</li>"
-        body += f"""
-        </ul>
-        <p>Please <a href="{url_for('approve_ticket_page', ticket_id=ticket_id, _external=True)}">approve</a> or <a href="{url_for('reject_ticket_page', ticket_id=ticket_id, _external=True)}">reject</a> the new counteroffer.</p>
-        <p>Thank you,</p>
-        <p>IMCC Admin</p>
-        """
+        send_rejection_email(ticket, details, file, email_template)
 
-        # Send the email
-        try:
-            send_email(client_email, subject, body)
-        except Exception as email_error:
-            return jsonify({"error": f"Failed to send email: {email_error}"}), 500
+        return jsonify({"message": "Ticket rejected successfully"}), 200
 
-        return jsonify({"message": "Ticket details updated successfully and status set to Rejected"}), 200
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
-@app.route('/clientApproval', methods=['GET'])
-def approve_ticket():
-    ticket_id = request.args.get('ticket_id')
-    if not ticket_id:
-        return jsonify({"error": "No ticket ID provided"}), 400
+def send_rejection_email(ticket, updated_details, file, email_template):
+    client_email = ticket.client.client_email
+    subject = "IMCC Bantu 1-to-1 Ticket Update Notification"
+
+    body = email_template if email_template else generate_email_body(
+        ticket)
+    # body = generate_rejection_email_body(ticket)
+
+    msg = Message(
+        subject=subject,
+        recipients=[client_email],
+        body=body
+    )
+
+    if file and isinstance(file, FileStorage):
+        msg.attach(file.filename, file.content_type, file.read())
 
     try:
-        ticket = Tickets.query.get(ticket_id)
-        if not ticket:
-            return jsonify({"error": "Ticket not found"}), 404
-
-        # Update the ticket status to approved
-        ticket.ticket_status = 'Approved'
-        db.session.commit()
-
-        return render_template('response.html', message="Ticket approved successfully")
+        mail.send(msg)
+        print("Email sent successfully")
     except Exception as e:
-        db.session.rollback()
-        return render_template('response.html', message=f"Error: {str(e)}")
-
-
-@app.route('/clientRejection', methods=['GET', 'POST'])
-def reject_ticket():
-    ticket_id = request.args.get('ticket_id')
-    if not ticket_id:
-        return jsonify({"error": "No ticket ID provided"}), 400
-
-    try:
-        ticket = Tickets.query.get(ticket_id)
-        if not ticket:
-            return jsonify({"error": "Ticket not found"}), 404
-
-        if request.method == 'POST':
-            # Process new counteroffer details
-            data = request.get_json()
-            details = data.get('details')
-            if not details:
-                return jsonify({"error": "No details provided"}), 400
-
-            try:
-                # Delete old ticket details
-                TicketDetails.query.filter_by(ticket_id=ticket_id).delete()
-
-                # Add new ticket details
-                for detail in details:
-                    # Find or create the detail_id based on detail_name
-                    detail_record = Details.query.filter_by(
-                        detail_name=detail['detail_name']).first()
-                    if not detail_record:
-                        detail_record = Details(
-                            detail_name=detail['detail_name'],
-                            detail_type="VarChar(255)"
-                        )
-                        db.session.add(detail_record)
-                        db.session.flush()  # Get the new detail_id immediately
-
-                    new_ticket_detail = TicketDetails(
-                        ticket_id=ticket_id,
-                        detail_id=detail_record.detail_id,
-                        value=detail['value']
-                    )
-                    db.session.add(new_ticket_detail)
-
-                # Update the ticket's updated_datetime and status
-                ticket.updated_datetime = datetime.now(malaysia_timezone)
-                ticket.ticket_status = 'Pending Approval'
-                db.session.commit()
-
-                return jsonify({"message": "New counteroffer submitted successfully"})
-            except Exception as e:
-                db.session.rollback()
-                return jsonify({"error": str(e)}), 500
-
-        # Fetch required details for the package
-        package_details = PackageDetails.query.filter_by(
-            package_id=ticket.package_id).all()
-        details_list = [{'detail_name': pd.detail.detail_name,
-                         'detail_type': pd.detail.detail_type} for pd in package_details]
-
-        # Render the form for new counteroffer details with required details
-        return render_template('new_counteroffer_form.html', ticket_id=ticket_id, details_list=details_list)
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/approve_page', methods=['GET'])
-def approve_ticket_page():
-    ticket_id = request.args.get('ticket_id')
-    return render_template('approve_reject.html', action='approve', ticket_id=ticket_id)
-
-
-@app.route('/reject_page', methods=['GET'])
-def reject_ticket_page():
-    ticket_id = request.args.get('ticket_id')
-    return render_template('approve_reject.html', action='reject', ticket_id=ticket_id)
-
-
-@app.route('/match', methods=['POST'])
-@login_required
-@admin_required
-def match():
-    data = request.json
-    input_data = [
-        data['gender'],
-        data['country'],
-        data['school'],
-        data['language_1'],
-        data['language_2']
-    ]
-
-    top_matches = find_top_matches(input_data)
-    top_matches_list = top_matches.to_dict(orient='records')
-
-    return jsonify(top_matches_list)
-
-
-@app.route('/get-clients', methods=['GET'])
-@login_required
-@admin_required
-def get_clients():
-    package_ids = [1, 4, 5, 6]
-    clients = db.session.query(Clients).join(Tickets).filter(
-        Tickets.package_id.in_(package_ids), Clients.is_available == True).all()
-    client_list = [{"id": client.client_id, "name": client.client_name,
-                    "matric_no": client.matric_num} for client in clients]
-    return jsonify(client_list)
-
-
-@app.route('/get-client-details/<int:client_id>', methods=['GET'])
-@login_required
-@admin_required
-def get_client_details(client_id):
-    client = Clients.query.filter_by(client_id=client_id).first()
-    if client:
-        client_details = {
-            "gender": client.gender,
-            "country": client.country,
-            "school": client.school,
-            "language_1": client.language1,
-            "language_2": client.language2
-        }
-        return jsonify(client_details)
-    return jsonify({"error": "Client not found"}), 404
-
-
-@app.route('/insert-match', methods=['POST'])
-@login_required
-@admin_required
-def insert_match():
-    try:
-        user = current_user
-
-        client_id = request.json["client_id"]
-        mentor_id = request.json["mentor_id"]
-
-        matching = Matching(client_id=client_id, mentor_id=mentor_id)
-        db.session.add(matching)
-        db.session.commit()
-
-        # Retrieve the matching ID
-        matching_id = matching.matching_id
-
-        # Update the availability of the client and mentor
-        db.session.query(Clients).filter(Clients.client_id ==
-                                         client_id).update({Clients.is_available: False})
-        db.session.query(Mentor).filter(Mentor.id == mentor_id).update(
-            {Mentor.is_available: False})
-
-        # Update the tickets for the specified client with the new matching ID
-        db.session.query(Tickets).filter(Tickets.client_id == client_id).update(
-            {Tickets.matching_id: matching_id})
-
-        db.session.commit()
-
-        return 'New match has been created successfully!', 201
-    except Exception as e:
-        print(f"Error: {e}")
-        return str(e), 500
-
+        print(f"Failed to send email: {str(e)}")
+        
 
 if __name__ == "__main__":
     app.run(debug=True)

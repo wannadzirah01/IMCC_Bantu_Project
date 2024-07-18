@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,7 +11,7 @@
         <div id="detailsContainer">
             {% for detail in details_list %}
             <div class="detail">
-                <label for="detail_name_{{ loop.index0 }}">Detail Name:</label>
+                <label for="detail_name_{{ loop.index0 }}"></label>
                 <input type="text" id="detail_name_{{ loop.index0 }}" name="details[{{ loop.index0 }}][detail_name]" value="{{ detail.detail_name }}" readonly required>
                 <label for="value_{{ loop.index0 }}">Value:</label>
                 {% if detail.detail_type == 'Date' %}
@@ -52,7 +52,11 @@
             })
             .then(response => response.json())
             .then(result => {
-                alert(result.message || result.error);
+                if (result.redirect_url) {
+                    window.location.href = result.redirect_url;
+                } else {
+                    alert(result.message || result.error);
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -60,4 +64,4 @@
         });
     </script>
 </body>
-</html>
+</html> -->

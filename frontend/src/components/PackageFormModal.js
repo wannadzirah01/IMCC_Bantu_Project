@@ -15,7 +15,7 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
     const [country, setCountry] = useState("");
     const [language1, setLanguage1] = useState("");
     const [language2, setLanguage2] = useState("");
-    const [file, setFile] = useState(null);
+    // const [file, setFile] = useState(null);
     const [matricNum, setMatricNum] = useState("");
     const [school, setSchool] = useState("");
 
@@ -48,8 +48,8 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
             setName(value);
         } else if (name === "email") {
             setEmail(value);
-        } else if (name === "file") {
-            setFile(files[0]);
+        // } else if (name === "file") {
+        //     setFile(files[0]);
         } else if (name === "phoneNum") {
             setPhoneNum(value);
         } else if (name === "gender") {
@@ -79,12 +79,12 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
         formDataToSend.append("name", name);
         formDataToSend.append("email", email);
         formDataToSend.append("phone_num", phoneNum);
-        formDataToSend.append("file", file);
+        // formDataToSend.append("file", file);
         formDataToSend.append("package_id", packageId);
-        formDataToSend.append("gender", gender); // Add gender
-        formDataToSend.append("country", country); // Add country
-        formDataToSend.append("language1", language1); // Add language1
-        formDataToSend.append("language2", language2); // Add language2
+        formDataToSend.append("gender", gender); 
+        formDataToSend.append("country", country); 
+        formDataToSend.append("language1", language1); 
+        formDataToSend.append("language2", language2); 
         formDataToSend.append("matric_num", matricNum);
         formDataToSend.append("school", school); 
         Object.entries(formData).forEach(([key, value]) => {
@@ -99,11 +99,10 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
-                    withCredentials: true, // Include withCredentials here
+                    withCredentials: true, 
                 }
             );
             console.log("Form submitted successfully:", response.data);
-            // Reset all form fields
             setName("");
             setEmail("");
             setPhoneNum("");
@@ -113,7 +112,7 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
             setLanguage2("");
             setMatricNum("");
             setSchool("");
-            setFile(null);
+            // setFile(null);
             setFormData({});
             onRequestClose();
         } catch (error) {
@@ -185,7 +184,7 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
                             <label>Gender: </label>
                             <select
                                 name="gender"
-                                value={gender} // Use gender state
+                                value={gender}
                                 onChange={handleChange}
                                 required
                             >
@@ -225,7 +224,7 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
                         </div>
                     </>
                 )}
-                <div className="detail-row">
+                {/* <div className="detail-row">
                     <label>Upload File: </label>
                     <input
                         type="file"
@@ -233,7 +232,7 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
                         onChange={handleChange}
                         required
                     />
-                </div>
+                </div> */}
                 {details.map((detail) => (
                     <div className="detail-row" key={detail.detail_name}>
                         <label>{detail.detail_name}: </label>

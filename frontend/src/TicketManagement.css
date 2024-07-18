@@ -79,7 +79,8 @@
   /* TicketManagement.css */
 
 button.reject.disabled,
-button.approve.disabled {
+button.approve.disabled,
+button.edit.disabled {
     background-color: gray;
     cursor: not-allowed;
 }
@@ -92,4 +93,84 @@ button.reject:not(.disabled) {
 button.approve:not(.disabled) {
     background-color: green;
     cursor: pointer;
+}
+
+.complete {
+  background-color: blue; /* Change to your preferred shade of blue */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.complete:hover {
+  background-color: darkblue; /* Darker shade on hover */
+}
+
+.approve {
+  background-color: green;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.approve.disabled {
+  background-color: grey;
+  cursor: not-allowed;
+}
+
+.reject {
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.reject.disabled {
+  background-color: grey;
+  cursor: not-allowed;
+}
+
+.complete {
+  background-color: blue; 
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.complete.disabled {
+  background-color: grey;
+  cursor: not-allowed;
+}
+
+.edit {
+  background-color: blue; /* Change to your preferred shade of blue */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.edit.disabled {
+  background-color: grey;
+  cursor: not-allowed;
+}
+
+.actions-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.actions-container button {
+  flex: 1 0 45%; /* Adjust the percentage to control the button width */
+  margin: 5px; /* Adjust the margin to control the spacing */
 }

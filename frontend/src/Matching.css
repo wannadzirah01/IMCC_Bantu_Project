@@ -5,6 +5,7 @@
     background-color: #f8f9fa; /* Light background */
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 .card {
@@ -45,4 +46,121 @@ button.cancel {
 button.assign {
     background-color: #4CAF50; /* Same as approve */
     color: white; /* Optional: text color */
+}
+
+.header {
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: space-between; /* Space between title and button */
+    margin-bottom: 20px; /* Space below the header */
+}
+
+.navigate-button {
+    top: 10px; /* Adjust as needed */
+    right: 10px; /* Adjust as needed */
+    background-color: #4CAF50; /* Blue background */
+    color: white; /* White text color */
+    border: none;
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 20px; /* Padding */
+    cursor: pointer; /* Pointer on hover */
+    font-size: 16px; /* Font size */
+}
+
+.navigate-button:hover {
+    background-color: darkblue; /* Darker blue on hover */
+}
+
+/* Matching.css */
+
+.container {
+    margin: 20px auto;
+    max-width: 1200px;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+.btn.cancel {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.btn.cancel:hover {
+    background-color: #c82333;
+}
+
+.mentor-selection {
+    margin-top: 20px;
+}
+
+.mentor-details {
+    margin-top: 20px;
+}
+
+.mentor-details .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.mentor-details .col-md-4 {
+    flex: 1;
+    max-width: calc(33.333% - 20px);
+    box-sizing: border-box;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card h4 {
+    margin-top: 0;
+}
+
+.btn.assign {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.btn.assign:hover {
+    background-color: #0056b3;
+}
+
+.client-details, .mentor-selection, .mentor-details {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.form-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.form-label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
 }

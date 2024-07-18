@@ -37,14 +37,21 @@ function NavBar({ userRole, setUserRole }) {
                 IMCC Bantu: 1 to 1
             </Link>
             <ul>
-                <CustomLink to="/packageListing">
-                    Bantu 1-to-1 Package
-                </CustomLink>
-                <CustomLink to="/user">User</CustomLink>
-                <CustomLink to="/matching">Matching</CustomLink>
-                <CustomLink to="/ticketManagement">
-                    Ticket Management
-                </CustomLink>
+                {/* Conditionally render the Bantu 1-to-1 Package link */}
+                {!userRole && (
+                    <CustomLink to="/packageListing">
+                        Bantu 1-to-1 Package
+                    </CustomLink>
+                )}
+                {userRole && (
+                    <>
+                        <CustomLink to="/user">User</CustomLink>
+                        <CustomLink to="/ticketManagement">
+                            Ticket Management
+                        </CustomLink>
+                        {/* <CustomLink to="/matchingListing">Mentor Management</CustomLink> */}
+                    </>
+                )}
                 {userRole ? (
                     <div className="button-general-logout">
                         <button onClick={handleLogout}>Logout</button>
