@@ -224,15 +224,15 @@ const TicketManagement = (props) => {
             try {
                 await axios.post(
                     `http://localhost:5000/cancelTicket/${ticketId}`,
-                    {}, 
+                    {},
                     {
-                        withCredentials: true, 
+                        withCredentials: true,
                         headers: {
-                            "Content-Type": "application/json", 
+                            "Content-Type": "application/json",
                         },
                     }
                 );
-                fetchTickets(); 
+                fetchTickets();
             } catch (error) {
                 console.error("Error cancelling ticket:", error);
             }
@@ -377,7 +377,10 @@ const TicketManagement = (props) => {
                                     </button>
                                     <button
                                         className={`cancel ${
-                                            ticket.ticket_status !== "Cancelled"
+                                            ticket.ticket_status ===
+                                                "Pending Approval" ||
+                                            ticket.ticket_status ===
+                                                "Pending Client Response"
                                                 ? ""
                                                 : "disabled"
                                         }`}
@@ -385,7 +388,10 @@ const TicketManagement = (props) => {
                                             handleCancel(ticket.ticket_id)
                                         }
                                         disabled={
-                                            ticket.ticket_status === "Cancelled"
+                                            ticket.ticket_status !==
+                                                "Pending Approval" &&
+                                            ticket.ticket_status !==
+                                                "Pending Client Response"
                                         }
                                     >
                                         Cancel

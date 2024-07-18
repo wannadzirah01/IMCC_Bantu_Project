@@ -54,7 +54,7 @@ app.config.update(
     MAIL_USE_TLS=True,
     MAIL_USERNAME='wannadzirahimccfyp@gmail.com',
     MAIL_PASSWORD='qminnnawxfzotlcx',
-    MAIL_DEFAULT_SENDER='IMCC-Bantu@usm.my'
+    MAIL_DEFAULT_SENDER='imccbantu@usm.my'
 )
 
 mail = Mail(app)
