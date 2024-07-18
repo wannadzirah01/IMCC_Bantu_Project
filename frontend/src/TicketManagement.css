@@ -86,7 +86,8 @@ button.edit.disabled {
 }
 
 button.reject:not(.disabled) {
-    background-color: red;
+    background-color: rgb(255, 255, 0);
+    color: black;
     cursor: pointer;
 }
 
@@ -124,7 +125,7 @@ button.approve:not(.disabled) {
 }
 
 .reject {
-  background-color: red;
+  background-color: rgb(144, 94, 94);
   color: white;
   border: none;
   border-radius: 5px;
@@ -173,4 +174,18 @@ button.approve:not(.disabled) {
 .actions-container button {
   flex: 1 0 45%; /* Adjust the percentage to control the button width */
   margin: 5px; /* Adjust the margin to control the spacing */
+}
+
+.cancel {
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.cancel.disabled {
+  background-color: grey;
+  cursor: not-allowed;
 }

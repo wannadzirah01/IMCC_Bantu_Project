@@ -816,7 +816,27 @@ def send_rejection_email(ticket, updated_details, file, email_template):
         print("Email sent successfully")
     except Exception as e:
         print(f"Failed to send email: {str(e)}")
-        
+
+
+@app.route('/cancelTicket/<int:ticket_id>', methods=['POST'])
+@login_required
+@admin_required
+def cancel_ticket(ticket_id):
+    ticket = Tickets.query.get(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    ticket.ticket_status = 'Cancelled'
+    # ticket.status_comment = remarks
+    db.session.commit()
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Ticket cancelled successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Error: {str(e)}"}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)

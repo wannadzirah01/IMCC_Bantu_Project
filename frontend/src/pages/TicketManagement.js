@@ -216,6 +216,28 @@ const TicketManagement = (props) => {
             }
         }
     };
+    const handleCancel = async (ticketId) => {
+        const confirmCancel = window.confirm(
+            "Are you sure you want to cancel this ticket?"
+        );
+        if (confirmCancel) {
+            try {
+                await axios.post(
+                    `http://localhost:5000/cancelTicket/${ticketId}`,
+                    {}, 
+                    {
+                        withCredentials: true, 
+                        headers: {
+                            "Content-Type": "application/json", 
+                        },
+                    }
+                );
+                fetchTickets(); 
+            } catch (error) {
+                console.error("Error cancelling ticket:", error);
+            }
+        }
+    };
 
     return (
         <div className="table-container">
@@ -352,6 +374,21 @@ const TicketManagement = (props) => {
                                         }
                                     >
                                         Complete
+                                    </button>
+                                    <button
+                                        className={`cancel ${
+                                            ticket.ticket_status !== "Cancelled"
+                                                ? ""
+                                                : "disabled"
+                                        }`}
+                                        onClick={() =>
+                                            handleCancel(ticket.ticket_id)
+                                        }
+                                        disabled={
+                                            ticket.ticket_status === "Cancelled"
+                                        }
+                                    >
+                                        Cancel
                                     </button>
                                 </div>
                             </td>
