@@ -75,13 +75,13 @@ const ApprovalModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
 
     const generateEmailTemplate = (details) => {
         let body = `Dear Client,\n\n`;
-        body += `Your ticket has been updated with the following details:\n\n`;
+        body += `Your ticket has been approved with the following details:\n\n`;
 
         details.forEach((detail) => {
             body += `${detail.detail_name}: ${detail.value}\n`;
         });
 
-        body += "\nPlease reply to this email if you agree with the suggested details. Else, please reply to this email whether you would like to suggest new details or cancel the Bantu 1-to-1 subscription.\n\n";
+        body += "\nPlease proceed to pay for the package to be subscribed using the QR code attached below. After that, kindly reply this email with the receipt that you received after completing the payment process.\n\n";
         body += "Thank you,\nIMCC Admin";
         
         return body;

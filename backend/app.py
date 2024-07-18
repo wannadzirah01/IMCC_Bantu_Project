@@ -816,7 +816,7 @@ def generate_rejection_email_body(ticket):
             detail_id=detail.detail_id).first().detail_name
         body += f"{detail_name}: {detail.value}\n"
 
-    body += "\nIf you agree with the new details, please proceed to pay for the package to be subscribed using the QR code attached below. After that, kindly reply to this email with the receipt that you received after completing the payment process. Else, please reply to this email whether you would like to suggest new details or cancel the Bantu 1-to-1 subscription.\n\n"
+    body += "\nIf you agree with the new details, kindly reply to this email below. Else, please reply to this email whether you would like to suggest new details or cancel the Bantu 1-to-1 subscription.\n\n"
     body += "Thank you,\nIMCC Admin"
     return body
 
