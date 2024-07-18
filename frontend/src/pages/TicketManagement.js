@@ -277,6 +277,7 @@ const TicketManagement = (props) => {
                         <th>Package</th>
                         <th>Client Name</th>
                         <th>Client Email</th>
+                        <th>Client Info</th>
                         <th>Details</th>
                         <th>Created Date</th>
                         <th>Updated Date</th>
@@ -290,7 +291,22 @@ const TicketManagement = (props) => {
                             <td>{ticket.ticket_id}</td>
                             <td>{ticket.package}</td>
                             <td>{ticket.user_name}</td>
-                            <td>{ticket.email}</td>
+                            <td>{ticket.user_email}</td>
+                            <td>
+                                {Object.entries(ticket.client_details).map(
+                                    ([key, value]) => (
+                                        <div key={key}>
+                                            <strong>
+                                                {key
+                                                    .replace(/_/g, " ")
+                                                    .toUpperCase()}
+                                                :
+                                            </strong>{" "}
+                                            {value}
+                                        </div>
+                                    )
+                                )}
+                            </td>
                             <td>
                                 {ticket.details.map((detail) => (
                                     <div key={detail.detail_name}>

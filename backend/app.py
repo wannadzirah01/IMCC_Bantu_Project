@@ -332,6 +332,70 @@ def create_new_ticket():
 #     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
+# @app.route('/getAllTickets', methods=['GET'])
+# @login_required
+# @admin_required
+# def get_all_tickets():
+#     try:
+#         page = int(request.args.get('page', 1))
+#         limit = int(request.args.get('limit', 10))
+#         offset = (page - 1) * limit
+#         status_filter = request.args.getlist('status')
+
+#         # Status mapping
+#         status_mapping = {
+#             "Pending": ["Pending Approval", "Pending Client Response"],
+#             "Active": ["Active"],
+#             "Completed": ["Completed"]
+#         }
+
+#         if status_filter and status_filter[0] != "All":
+#             db_statuses = [
+#                 status for s in status_filter for status in status_mapping.get(s, [])]
+#             query = Tickets.query.filter(
+#                 Tickets.ticket_status.in_(db_statuses))
+#         else:
+#             query = Tickets.query
+
+#         # Eager load related data
+#         total_tickets = query.count()
+#         tickets = query.options(
+#             joinedload(Tickets.package),
+#             joinedload(Tickets.client),
+#             joinedload(Tickets.ticket_details).joinedload(TicketDetails.detail)
+#         ).order_by(Tickets.updated_datetime.desc()).offset(offset).limit(limit).all()
+
+#         if not tickets:
+#             return jsonify({"ticket_list": [], "total_tickets": total_tickets}), 200
+
+#         ticket_list = []
+#         for ticket in tickets:
+#             created_datetime = ticket.created_datetime.astimezone(
+#                 malaysia_timezone)
+
+#             updated_datetime = ticket.updated_datetime.astimezone(
+#                 malaysia_timezone)
+
+#             ticket_list.append({
+#                 "ticket_id": ticket.ticket_id,
+#                 "ticket_status": ticket.ticket_status,
+#                 "package": ticket.package.title,
+#                 "user_name": ticket.client.client_name,
+#                 "created_datetime": created_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+#                 "updated_datetime": updated_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+#                 # "file_name": ticket.receipt_file_path,
+#                 "email": ticket.client.client_email,
+#                 "details": [{"detail_name": detail.detail.detail_name, "detail_type": detail.detail.detail_type, "value": detail.value}
+#                             for detail in ticket.ticket_details]
+#             })
+
+#         return jsonify({'ticket_list': ticket_list, 'total_tickets': total_tickets})
+
+#     except Exception as e:
+#         app.logger.error(f"Error occurred: {str(e)}")
+#         return jsonify({"error": "An error occurred while fetching tickets."}), 500
+
+
 @app.route('/getAllTickets', methods=['GET'])
 @login_required
 @admin_required
@@ -372,19 +436,26 @@ def get_all_tickets():
         for ticket in tickets:
             created_datetime = ticket.created_datetime.astimezone(
                 malaysia_timezone)
-
             updated_datetime = ticket.updated_datetime.astimezone(
                 malaysia_timezone)
 
+            # Include client details in the ticket information
             ticket_list.append({
                 "ticket_id": ticket.ticket_id,
                 "ticket_status": ticket.ticket_status,
                 "package": ticket.package.title,
                 "user_name": ticket.client.client_name,
+                "user_email": ticket.client.client_email,
+                "client_details": {
+                    "gender": ticket.client.gender,
+                    "country": ticket.client.country,
+                    "language1": ticket.client.language1,
+                    "language2": ticket.client.language2,
+                    "school": ticket.client.school,
+                    "matric_num": ticket.client.matric_num
+                },
                 "created_datetime": created_datetime.strftime('%Y-%m-%d %H:%M:%S'),
                 "updated_datetime": updated_datetime.strftime('%Y-%m-%d %H:%M:%S'),
-                # "file_name": ticket.receipt_file_path,
-                "email": ticket.client.client_email,
                 "details": [{"detail_name": detail.detail.detail_name, "detail_type": detail.detail.detail_type, "value": detail.value}
                             for detail in ticket.ticket_details]
             })
@@ -440,6 +511,7 @@ def activate_ticket(ticket_id):
         ticket = Tickets.query.get(ticket_id)
         if ticket:
             ticket.ticket_status = 'Active'
+            ticket.updated_datetime = datetime.now(malaysia_timezone)
             db.session.commit()
             return jsonify({"message": "Ticket activated successfully"}), 200
         else:
@@ -539,6 +611,7 @@ def review_ticket(ticket_id):
             db.session.add(new_ticket_detail)
 
     ticket.ticket_status = 'Pending Payment'
+    ticket.updated_datetime = datetime.now(malaysia_timezone)
     ticket.status_comment = remarks
     db.session.commit()
 
@@ -668,6 +741,7 @@ def complete_ticket(ticket_id):
         return jsonify({"error": "Ticket not found"}), 404
 
     ticket.ticket_status = 'Completed'
+    ticket.updated_datetime = datetime.now(malaysia_timezone)
     # ticket.status_comment = remarks
     db.session.commit()
 
@@ -832,6 +906,7 @@ def cancel_ticket(ticket_id):
         return jsonify({"error": "Ticket not found"}), 404
 
     ticket.ticket_status = 'Cancelled'
+    ticket.updated_datetime = datetime.now(malaysia_timezone)
     # ticket.status_comment = remarks
     db.session.commit()
 
