@@ -17,6 +17,8 @@
 
 .modal h3 {
     text-align: center;
+    color: #000000;
+    font-size: larger;
 }
 
 .modal form {
