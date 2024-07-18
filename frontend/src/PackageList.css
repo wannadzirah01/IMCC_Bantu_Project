@@ -1,0 +1,93 @@
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.package-container {
+    width: 100%;
+    max-width: 800px; 
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.package-container:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
+}
+
+.package-info h4 {
+    font-size: 1.5em;
+    margin: 0 0 10px;
+    color: #333;
+}
+
+.package-info p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.package-info .price {
+    font-weight: bold;
+    color: #f68b1e; 
+}
+
+.button-container {
+    margin-top: 15px;
+}
+
+.button-container button {
+    background-color: #f68b1e;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.button-container button:hover {
+    background-color: #f68b1e; 
+    transform: scale(1.05);
+}
+
+.info-bantu {
+    font-style: italic;
+    font-size: large;
+    color: #333;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-left: 4px solid #f68b1e;
+}
+
+.info-bantu {
+    font-size: 16px; /* Adjust font size as needed */
+    line-height: 1.6; /* Improve readability with line height */
+    text-align: center; /* Center-align the text */
+    margin: 20px auto; /* Add margin for spacing */
+    padding: 10px; /* Add padding inside the element */
+    max-width: 800px; /* Set a max-width to prevent overly wide text */
+    color: #333; /* Set a color that suits your theme */
+    background-color: #f9f9f9; /* Optional: Add a background color */
+    border-radius: 8px; /* Optional: Add rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add subtle shadow */
+}
+
+.info-bantu p {
+    margin: 0 0 15px; 
+    display: block; 
+}
+
+h2 {
+    color: #000000;
+    font-size: 2em;
+    margin-bottom: 20px;
+}

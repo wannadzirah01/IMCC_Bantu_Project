@@ -38,7 +38,7 @@ const Login = ({ setUserRole }) => {
         <div className="login-page">
             <div className="auth-form-container">
                 <form className="login-form" onSubmit={handleSubmit}>
-                    <h2>Log In</h2>
+                    <h3>Log In</h3>
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
                         <input

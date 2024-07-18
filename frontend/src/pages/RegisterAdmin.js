@@ -53,7 +53,7 @@ const RegisterAdmin = () => {
         <div className="register-page">
             <div className="auth-form-container">
                 <form className="register-form" onSubmit={handleSubmit}>
-                    <h2>Register New Admin</h2>
+                    <h2>Add New Admin</h2>
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
                         <input

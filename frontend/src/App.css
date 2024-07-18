@@ -122,3 +122,9 @@
 .package-details-form {
     background-color: cadetblue;
 }
+
+h3 {
+    color: #ffffff;
+    font-size: 2em;
+    margin-bottom: 20px;
+}

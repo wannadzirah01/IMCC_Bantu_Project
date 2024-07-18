@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import PackageFormModal from "../components/PackageFormModal";
+import "../PackageList.css"; // Ensure the path is correct
 
 function PackageList() {
     const [packages, setPackages] = useState([]);
@@ -34,20 +35,27 @@ function PackageList() {
     };
 
     return (
-        <div>
+        <div className="container">
             <h2>Bantu 1-to-1 Packages</h2>
             <h5 className="info-bantu">
-                Welcome to the Bantu 1-to-1 Service Ticketing! To get started,
-                please select the package you purchased. For a specific package,
-                kindly submit your receipt along with the required details. All
-                updates regarding your submitted ticket will be sent via email.
+                <p>
+                    Welcome to Bantu 1-to-1 Service Ticketing! To get started,
+                    please select the package you wish to subscribe to. For each
+                    package, kindly submit the required details to complete your
+                    registration. We will keep you updated via email regarding
+                    your ticket, so please make sure to check your inbox
+                    regularly. Your cooperation is essential for ensuring a
+                    smooth and timely delivery of our Bantu 1-to-1 service.
+                    Thank you for choosing us!
+                </p>
             </h5>
+
             {packages.map((packageItem) => (
                 <div key={packageItem.id} className="package-container">
                     <div className="package-info">
                         <h4>{packageItem.title}</h4>
                         <p>{packageItem.description}</p>
-                        <p>Price: RM {packageItem.price}</p>
+                        <p className="price">Price: RM {packageItem.price}</p>
                     </div>
                     <div className="button-container">
                         <button onClick={() => handleTicket(packageItem.id)}>
