@@ -11,6 +11,7 @@ import TicketManagement from "./pages/TicketManagement";
 import User from "./pages/User";
 import RegisterAdmin from "./pages/RegisterAdmin";
 import ChangePassword from "./components/ChangePassword";
+import EditProfile from "./components/EditProfile";
 // import MatchingListing from "./pages/MatchingListing";
 
 const App = () => {
@@ -54,6 +55,7 @@ const App = () => {
                     <Route path="/user" element={<User />} />
                     <Route path="/registerAdmin" element={<RegisterAdmin />} />
                     <Route path="/changePassword" element={<ChangePassword />} />
+                    <Route path="/editProfile" element={<EditProfile />} />
                     {/* <Route path="/matchingListing" element={<MatchingListing />} /> */}
                 </Routes>
             </BrowserRouter>

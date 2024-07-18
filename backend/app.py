@@ -843,5 +843,33 @@ def cancel_ticket(ticket_id):
         return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
+@app.route('/updateProfile', methods=['PUT'])
+@login_required
+def update_profile():
+    user = current_user
+
+    # Get the updated data from the request
+    data = request.json
+
+    # Validate incoming data
+    name = data.get('name')
+    phone_number = data.get('phone_number')
+
+    if not name or not phone_number:
+        return jsonify({"message": "Name and phone number are required."}), 400
+
+    try:
+        # Update the user profile
+        user.name = name
+        user.phone_number = phone_number
+        db.session.commit()
+
+        return jsonify({"message": "Profile updated successfully."}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "An error occurred while updating the profile.", "error": str(e)}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)

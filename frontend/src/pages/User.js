@@ -76,6 +76,9 @@ const User = () => {
                     <Link to="/changePassword" className="button">
                         Change Password
                     </Link>
+                    <Link to="/editProfile" className="button">
+                        Edit Profile
+                    </Link>
                 </div>
             </div>
         </div>
