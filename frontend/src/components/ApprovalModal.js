@@ -54,10 +54,7 @@ const ApprovalModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
     // };
 
     const handleSubmit = () => {
-        const updatedEmailTemplate = editDetails
-            ? generateEmailTemplate(ticketDetails)
-            : emailTemplate;
-        onSubmit(ticketId, updatedEmailTemplate, file, editDetails ? ticketDetails : null);
+        onSubmit(ticketId, emailTemplate, file, editDetails ? ticketDetails : null);
     };
 
     const handleDetailChange = (index, value) => {
