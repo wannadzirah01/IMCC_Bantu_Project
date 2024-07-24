@@ -31,12 +31,42 @@ logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
 malaysia_timezone = pytz.timezone('Asia/Kuala_Lumpur')
+global_packages_which_includes_study_essential = [1, 4, 5, 6]
 
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
 app.config['UPLOAD_FOLDER'] = 'C:\\Users\\wanna\\IMCC_Bantu_Project\\upload'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 Session(app)
+
+
+def add_admin():
+    email = "imccbantu@usm.my"
+    password = "imccbantu"  
+    name = "IMCC Bantu Admin"
+    phone_number = ""
+    user_role = "admin"
+
+    existing_user = Users.query.filter_by(email=email).first()
+    if not existing_user:
+        hashed_password = bcrypt.generate_password_hash(
+            password).decode('utf-8')
+
+        new_admin = Admins(
+            email=email,
+            password=hashed_password,
+            name=name,
+            phone_number=phone_number,
+            user_role=user_role
+        )
+
+        db.session.add(new_admin)
+        db.session.commit()
+
+        print(f"Admin {email} added successfully.")
+    else:
+        print(f"Admin {email} already exists.")
+
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -45,9 +75,20 @@ bcrypt = Bcrypt(app)
 CORS(app, origins="http://localhost:3000", supports_credentials=True)
 server_session = Session(app)
 db.init_app(app)
+with app.app_context():
+    db.create_all()
+    add_admin()
 
 
-# Mail configuration
+# app.config.update(
+#     MAIL_SERVER='smtp.usm.my',
+#     MAIL_PORT=587,
+#     MAIL_USE_TLS=True,
+#     MAIL_USERNAME='imccbantu@usm.my',
+#     MAIL_PASSWORD='your_usm_email_password',
+#     MAIL_DEFAULT_SENDER='imccbantu@usm.my'
+# )
+
 app.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT=587,
@@ -96,7 +137,6 @@ def register_user():
         name = data["name"]
         phone_number = data["phoneNumber"]
 
-        # Check if the current user is the initial admin or another admin
         if current_user.email != "imccbantu@usm.my":
             return jsonify({"error": "Unauthorized to register new admins"}), 403
 
@@ -188,12 +228,13 @@ def get_admins():
     return jsonify(admin_list), 200
 
 
-@app.route('/getUserRole', methods=['GET'])
+@app.route('/getUserDetails', methods=['GET'])
 @login_required
-def get_user_role():
+def get_user_details():
     user = current_user
     user_role = user.user_role
-    return jsonify({"role": user_role})
+    user_email = user.email
+    return jsonify({"role": user_role, "email": user_email})
 
 
 @app.route('/@me')
@@ -310,9 +351,10 @@ def create_new_ticket():
     db.session.add(new_ticket)
     db.session.commit()
 
+    additional_details_list = []
     # Save the dynamic details
     for detail_name, detail_value in data.items():
-        if detail_name not in ['name', 'email', 'phone_num', 'package_id', 'gender', 'country', 'language1', 'language2', 'school', matric_num]:
+        if detail_name not in ['name', 'email', 'phone_num', 'package_id', 'gender', 'country', 'language1', 'language2', 'school', 'matric_num']:
             detail_entry = Details.query.filter_by(
                 detail_name=detail_name).first()
             if detail_entry:
@@ -322,8 +364,65 @@ def create_new_ticket():
                     value=detail_value
                 )
                 db.session.add(ticket_detail)
+            additional_details_list.append(
+                f"<b>{detail_name.capitalize()}:</b> {detail_value}")
 
+    additional_details = ", ".join(additional_details_list)
     db.session.commit()
+
+    template_for_package_that_includes_study_essential = f"""
+    <p>Dear {client_name},</p>
+    <p>Thank you for your submission. Here are the details of your ticket:</p>
+    <p><b>Ticket ID:</b> {new_ticket.ticket_id}<br>
+    <b>Package:</b> {package.title}</p>
+    <p><b>Student Details:</b><br>
+    <b>Name:</b> {client_name}<br>
+    <b>Email:</b> {client_email}<br>
+    <b>Phone Number:</b> {client_phone_num}<br>
+    <b>Gender:</b> {gender}<br>
+    <b>Country:</b> {country}<br>
+    <b>1st Language:</b> {language1}<br>
+    <b>2nd Language:</b> {language2}<br>
+    <b>Matric Number:</b> {matric_num}<br>
+    <b>School:</b> {school}</p>
+    <p><b>Bantu 1-to-1 Service Details:</b><br>
+    {additional_details}</p>
+    <p>We will review your submission and get back to you soon.</p>
+    <p>Regards,<br>
+    IMCC Admin</p>
+    """
+
+    template_for_other_packages = f"""
+    <p>Dear {client_name},</p>
+    <p>Thank you for your submission. Here are the details of your ticket:</p>
+    <p><b>Ticket ID:</b> {new_ticket.ticket_id}<br>
+    <b>Package:</b> {package.title}</p>
+    <p><b>Student Details:</b><br>
+    <b>Name:</b> {client_name}<br>
+    <b>Email:</b> {client_email}<br>
+    <b>Phone Number:</b> {client_phone_num}</p>
+    <p><b>Bantu 1-to-1 Service Details:</b><br>
+    {additional_details}</p>
+    <p>We will review your submission and get back to you soon.</p>
+    <p>Regards,<br>
+    IMCC Admin</p>
+    """
+
+    if int(package_id) in global_packages_which_includes_study_essential:
+        email_template = template_for_package_that_includes_study_essential
+    else:
+        email_template = template_for_other_packages
+
+    msg = Message(subject="IMCC Bantu 1-to-1 Notification",
+                  sender="imccbantu@usm.my",
+                  recipients=[client_email])
+    msg.html = email_template
+
+    try:
+        mail.send(msg)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
     return jsonify({'message': 'Form submitted successfully'})
 
 

@@ -11,7 +11,7 @@ const User = () => {
         const fetchUserRole = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:5000/getUserRole",
+                    "http://localhost:5000/getUserDetails",
                     { withCredentials: true }
                 );
                 setUserRole(response.data.role);

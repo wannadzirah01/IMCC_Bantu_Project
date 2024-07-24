@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import "../App.css";
 
-const Login = ({ setUserRole }) => {
+const Login = ({ fetchUserDetails }) => {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -19,10 +19,10 @@ const Login = ({ setUserRole }) => {
             alert("Successful user login");
 
             const userRoleResponse = await axios.get(
-                "http://localhost:5000/getUserRole",
+                "http://localhost:5000/getUserDetails",
                 { withCredentials: true }
             );
-            setUserRole(userRoleResponse.data.role);
+            fetchUserDetails(userRoleResponse.data.role);
 
             if (userRoleResponse.data.role === "admin") {
                 navigate("/ticketManagement");

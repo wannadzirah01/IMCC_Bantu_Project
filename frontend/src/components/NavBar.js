@@ -2,7 +2,7 @@ import { Link, useMatch, useResolvedPath, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import "../Style.css";
 
-function NavBar({ userRole, setUserRole }) {
+function NavBar({ userRole, setUserRole, userEmail, setUserEmail }) {
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -12,6 +12,7 @@ function NavBar({ userRole, setUserRole }) {
                 {},
                 { withCredentials: true }
             );
+            setUserEmail("")
             setUserRole("");
             navigate("/");
         } catch (error) {
@@ -49,9 +50,11 @@ function NavBar({ userRole, setUserRole }) {
                         <CustomLink to="/ticketManagement">
                             Ticket Management
                         </CustomLink>
-                        <CustomLink to="/registerAdmin">
-                            Register Admin
-                        </CustomLink>
+                        {userEmail === "imccbantu@usm.my" && (
+                            <CustomLink to="/registerAdmin">
+                                Admin Management
+                            </CustomLink>
+                        )}
                         {/* <CustomLink to="/matchingListing">Mentor Management</CustomLink> */}
                     </>
                 )}
@@ -61,7 +64,7 @@ function NavBar({ userRole, setUserRole }) {
                     </div>
                 ) : (
                     <div className="link">
-                        <Link to="/">Login</Link>
+                        <Link to="/">Login for Admin</Link>
                     </div>
                 )}
             </ul>

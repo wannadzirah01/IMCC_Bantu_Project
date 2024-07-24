@@ -16,42 +16,36 @@ import EditProfile from "./components/EditProfile";
 
 const App = () => {
     const [userRole, setUserRole] = useState("");
+    const [userEmail, setUserEmail] = useState("");
+
+    const fetchUserDetails = async () => {
+        try {
+            const response = await axios.get(
+                "http://localhost:5000/getUserDetails",
+                { withCredentials: true }
+            );
+            setUserRole(response.data.role);
+            setUserEmail(response.data.email);
+        } catch (error) {
+            console.error("Error fetching user details:", error);
+        }
+    };
+
 
     useEffect(() => {
-        const fetchUserRole = async () => {
-            try {
-                const response = await axios.get(
-                    "http://localhost:5000/getUserRole",
-                    { withCredentials: true }
-                );
-                setUserRole(response.data.role);
-            } catch (error) {
-                console.error("Error fetching user role:", error);
-            }
-        };
-
-        fetchUserRole();
+        fetchUserDetails();
     }, []);
 
     return (
         <div className="App">
             <BrowserRouter>
-                <NavBar userRole={userRole} setUserRole={setUserRole} />
+                <NavBar userRole={userRole} setUserRole={setUserRole} userEmail={userEmail} setUserEmail={setUserEmail} />
                 <Routes>
-                    <Route
-                        path="/"
-                        element={<Login setUserRole={setUserRole} />}
-                    />
+                    <Route path="/" element={<Login fetchUserDetails={fetchUserDetails} />} />
                     <Route path="/register" element={<Register />} />
-                    <Route
-                        path="/packageListing"
-                        element={<PackageListing />}
-                    />
+                    <Route path="/packageListing" element={<PackageListing />} />
                     <Route path="/matching" element={<Matching />} />
-                    <Route
-                        path="/ticketManagement"
-                        element={<TicketManagement />}
-                    />
+                    <Route path="/ticketManagement" element={<TicketManagement />} />
                     <Route path="/user" element={<User />} />
                     <Route path="/registerAdmin" element={<RegisterAdmin />} />
                     <Route path="/changePassword" element={<ChangePassword />} />
