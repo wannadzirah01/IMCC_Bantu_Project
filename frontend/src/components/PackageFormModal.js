@@ -8,6 +8,7 @@ import "../Modal.css";
 Modal.setAppElement("#root");
 
 function PackageFormModal({ isOpen, onRequestClose, packageId }) {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [details, setDetails] = useState([]);
     const [formData, setFormData] = useState({});
     const [name, setName] = useState("");
@@ -25,7 +26,7 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
         const fetchPackageDetails = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:5000/getPackageDetails/${packageId}`
+                    `${apiUrl}/getPackageDetails/${packageId}`
                 );
                 setDetails(response.data.package_details);
                 setFormData(
@@ -91,7 +92,7 @@ function PackageFormModal({ isOpen, onRequestClose, packageId }) {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/createNewTicket",
+                `${apiUrl}/createNewTicket`,
                 formDataToSend,
                 {
                     headers: {

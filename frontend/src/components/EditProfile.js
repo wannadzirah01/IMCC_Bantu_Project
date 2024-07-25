@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "../EditProfile.css";
 
 const EditProfile = () => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [userData, setUserData] = useState(null);
     const [formData, setFormData] = useState({
         name: "",
@@ -16,7 +17,7 @@ const EditProfile = () => {
     useEffect(() => {
         async function fetchUserProfile() {
             try {
-                const resp = await axios.get("http://localhost:5000/@me");
+                const resp = await axios.get(`${apiUrl}/@me`);
                 setUserData(resp.data);
                 setFormData({
                     name: resp.data.name,
@@ -39,7 +40,7 @@ const EditProfile = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put("http://localhost:5000/updateProfile", formData, {
+            await axios.put(`${apiUrl}/updateProfile`, formData, {
                 withCredentials: true,
             });
             navigate("/user"); // Redirect back to the profile page

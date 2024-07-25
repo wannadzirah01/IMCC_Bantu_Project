@@ -7,6 +7,7 @@ import { useDropzone } from "react-dropzone";
 Modal.setAppElement("#root");
 
 function RejectionModal({ isOpen, onRequestClose, ticketId }) {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [details, setDetails] = useState([]);
     const [formData, setFormData] = useState({});
     const [file, setFile] = useState(null);
@@ -21,7 +22,7 @@ function RejectionModal({ isOpen, onRequestClose, ticketId }) {
     const fetchEmailTemplate = async (ticketId) => {
         try {
             const response = await axios.get(
-                `http://localhost:5000/getRejectionEmailTemplate/${ticketId}`,
+                `${apiUrl}/getRejectionEmailTemplate/${ticketId}`,
                 { withCredentials: true }
             );
             setEmailTemplate(response.data.emailTemplate);
@@ -34,7 +35,7 @@ function RejectionModal({ isOpen, onRequestClose, ticketId }) {
         const fetchTicketDetails = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:5000/getTicketDetails/${ticketId}`
+                    `${apiUrl}/getTicketDetails/${ticketId}`
                 );
                 const ticketDetails = response.data;
 
@@ -102,7 +103,7 @@ function RejectionModal({ isOpen, onRequestClose, ticketId }) {
 
         try {
             const response = await axios.put(
-                `http://localhost:5000/rejectTicket/${ticketId}`,
+                `${apiUrl}/rejectTicket/${ticketId}`,
                 formDataObj,
                 {
                     headers: {

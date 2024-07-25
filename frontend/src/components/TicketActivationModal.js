@@ -4,7 +4,7 @@ import "../Modal.css";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 
-const CompleteModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
+const TicketActivationModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
     const apiUrl = process.env.REACT_APP_API_URL;
     const [file, setFile] = useState(null);
     const [emailTemplate, setEmailTemplate] = useState("");
@@ -24,7 +24,7 @@ const CompleteModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
     const fetchEmailTemplate = async (ticketId) => {
         try {
             const response = await axios.get(
-                `${apiUrl}/getCompletionEmailTemplate/${ticketId}`,
+                `${apiUrl}/getTicketActivationEmailTemplate/${ticketId}`,
                 { withCredentials: true }
             );
             setEmailTemplate(response.data.emailTemplate);
@@ -33,9 +33,11 @@ const CompleteModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
         }
     };
 
+
     const handleSubmit = () => {
         onSubmit(ticketId, emailTemplate, file);
     };
+
 
     return (
         <Modal
@@ -43,7 +45,7 @@ const CompleteModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
             onRequestClose={onRequestClose}
             className="modal"
         >
-            <h2>Complete Ticket</h2>
+            <h2>Approve Payment</h2>
             <label>
                 <b>Client Email Template:</b>
             </label>
@@ -77,4 +79,4 @@ const CompleteModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
     );
 };
 
-export default CompleteModal;
+export default TicketActivationModal;

@@ -5,6 +5,7 @@ import { useDropzone } from "react-dropzone";
 import axios from "axios";
 
 const ApprovalModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [file, setFile] = useState(null);
     const [emailTemplate, setEmailTemplate] = useState("");
     const [editDetails, setEditDetails] = useState(false);
@@ -28,7 +29,7 @@ const ApprovalModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
     const fetchEmailTemplate = async (ticketId) => {
         try {
             const response = await axios.get(
-                `http://localhost:5000/getEmailTemplate/${ticketId}`,
+                `${apiUrl}/getEmailTemplate/${ticketId}`,
                 { withCredentials: true }
             );
             setEmailTemplate(response.data.emailTemplate);
@@ -40,7 +41,7 @@ const ApprovalModal = ({ isOpen, onRequestClose, ticketId, onSubmit }) => {
     const fetchTicketDetails = async (ticketId) => {
         try {
             const response = await axios.get(
-                `http://localhost:5000/getTicketDetails/${ticketId}`,
+                `${apiUrl}/getTicketDetails/${ticketId}`,
                 { withCredentials: true }
             );
             setTicketDetails(response.data.details);

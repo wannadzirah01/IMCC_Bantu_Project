@@ -42,7 +42,7 @@ Session(app)
 
 def add_admin():
     email = "imccbantu@usm.my"
-    password = "imccbantu"  
+    password = "imccbantu"
     name = "IMCC Bantu Admin"
     phone_number = ""
     user_role = "admin"
@@ -76,7 +76,7 @@ CORS(app, origins="http://localhost:3000", supports_credentials=True)
 server_session = Session(app)
 db.init_app(app)
 with app.app_context():
-    db.create_all()
+    # db.create_all()
     add_admin()
 
 
@@ -425,75 +425,6 @@ def create_new_ticket():
     return jsonify({'message': 'Form submitted successfully'})
 
 
-# @app.route('/uploads/<filename>', methods=['GET'])
-# def serve_file(filename):
-#     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-
-# @app.route('/getAllTickets', methods=['GET'])
-# @login_required
-# @admin_required
-# def get_all_tickets():
-#     try:
-#         page = int(request.args.get('page', 1))
-#         limit = int(request.args.get('limit', 10))
-#         offset = (page - 1) * limit
-#         status_filter = request.args.getlist('status')
-
-#         # Status mapping
-#         status_mapping = {
-#             "Pending": ["Pending Approval", "Pending Client Response"],
-#             "Active": ["Active"],
-#             "Completed": ["Completed"]
-#         }
-
-#         if status_filter and status_filter[0] != "All":
-#             db_statuses = [
-#                 status for s in status_filter for status in status_mapping.get(s, [])]
-#             query = Tickets.query.filter(
-#                 Tickets.ticket_status.in_(db_statuses))
-#         else:
-#             query = Tickets.query
-
-#         # Eager load related data
-#         total_tickets = query.count()
-#         tickets = query.options(
-#             joinedload(Tickets.package),
-#             joinedload(Tickets.client),
-#             joinedload(Tickets.ticket_details).joinedload(TicketDetails.detail)
-#         ).order_by(Tickets.updated_datetime.desc()).offset(offset).limit(limit).all()
-
-#         if not tickets:
-#             return jsonify({"ticket_list": [], "total_tickets": total_tickets}), 200
-
-#         ticket_list = []
-#         for ticket in tickets:
-#             created_datetime = ticket.created_datetime.astimezone(
-#                 malaysia_timezone)
-
-#             updated_datetime = ticket.updated_datetime.astimezone(
-#                 malaysia_timezone)
-
-#             ticket_list.append({
-#                 "ticket_id": ticket.ticket_id,
-#                 "ticket_status": ticket.ticket_status,
-#                 "package": ticket.package.title,
-#                 "user_name": ticket.client.client_name,
-#                 "created_datetime": created_datetime.strftime('%Y-%m-%d %H:%M:%S'),
-#                 "updated_datetime": updated_datetime.strftime('%Y-%m-%d %H:%M:%S'),
-#                 # "file_name": ticket.receipt_file_path,
-#                 "email": ticket.client.client_email,
-#                 "details": [{"detail_name": detail.detail.detail_name, "detail_type": detail.detail.detail_type, "value": detail.value}
-#                             for detail in ticket.ticket_details]
-#             })
-
-#         return jsonify({'ticket_list': ticket_list, 'total_tickets': total_tickets})
-
-#     except Exception as e:
-#         app.logger.error(f"Error occurred: {str(e)}")
-#         return jsonify({"error": "An error occurred while fetching tickets."}), 500
-
-
 @app.route('/getAllTickets', methods=['GET'])
 @login_required
 @admin_required
@@ -538,7 +469,6 @@ def get_all_tickets():
             updated_datetime = ticket.updated_datetime.astimezone(
                 malaysia_timezone)
 
-            # Include client details in the ticket information
             ticket_list.append({
                 "ticket_id": ticket.ticket_id,
                 "ticket_status": ticket.ticket_status,
@@ -603,15 +533,40 @@ def get_ticket_details(ticket_id):
         return jsonify({"error": str(e)}), 500
 
 
+def generate_activation_email_body(ticket, status_comment=None):
+    body = f"Dear {ticket.client.client_name},\n\n"
+    body += f"""We have received your payment for ticket ID {ticket.ticket_id} related to the Package: {
+        ticket.package.title}. We are pleased to inform you that the service will commence soon. Below are the details of your ticket:\n\n"""
+
+    ticket_details = TicketDetails.query.filter_by(
+        ticket_id=ticket.ticket_id).all()
+    for detail in ticket_details:
+        detail_name = Details.query.filter_by(
+            detail_id=detail.detail_id).first().detail_name
+        body += f"{detail_name}: {detail.value}\n"
+
+    if status_comment:
+        body += f"\nRemarks: {status_comment}\n"
+
+    body += "\nThank you for choosing our service.\n\n"
+    body += "Best regards,\nIMCC Admin"
+    return body
+
+
 @app.route('/activateTicket/<int:ticket_id>', methods=['POST'])
 def activate_ticket(ticket_id):
-    # Logic to change the ticket status to 'Active'
+    data = request.form
+    remarks = data.get('remarks')
+    email_message = data.get('emailMessage')
+    file = request.files.get('file')
+    
     try:
         ticket = Tickets.query.get(ticket_id)
         if ticket:
             ticket.ticket_status = 'Active'
             ticket.updated_datetime = datetime.now(malaysia_timezone)
             db.session.commit()
+            send_ticket_activation_email(ticket, email_message, file, remarks)
             return jsonify({"message": "Ticket activated successfully"}), 200
         else:
             return jsonify({"error": "Ticket not found"}), 404
@@ -619,7 +574,45 @@ def activate_ticket(ticket_id):
         return jsonify({"error": str(e)}), 500
 
 
-def generate_email_body(ticket, status_comment=None):
+def send_ticket_activation_email(ticket, custom_message, file, status_comment):
+    client_email = ticket.client.client_email
+    subject = "IMCC Bantu 1-to-1 Notification"
+    sender_email = os.environ.get("MAIL_USERNAME", "wannadzirahimccfyp@gmail.com")  # Use the configured MAIL_USERNAME or specify a default
+
+    body = custom_message if custom_message else generate_activation_email_body(
+        ticket, status_comment)
+
+    msg = Message(
+        subject=subject,
+        recipients=[client_email],
+        body=body,
+        sender=sender_email
+    )
+
+    if file and isinstance(file, FileStorage):
+        print(f"Attaching file: {file.filename}")
+        msg.attach(file.filename, file.content_type, file.read())
+
+    try:
+        mail.send(msg)
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Failed to send email: {str(e)}")
+
+
+@app.route('/getTicketActivationEmailTemplate/<int:ticket_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_ticket_activation_email_template(ticket_id):
+    ticket = Tickets.query.get(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    email_template = generate_activation_email_body(ticket)
+    return jsonify({"emailTemplate": email_template}), 200
+
+
+def generate_approval_email_body(ticket, status_comment=None):
     body = f"Dear {ticket.client.client_name},\n\n"
     body += f"""Your ticket with ID {ticket.ticket_id} for Package: {
         ticket.package.title} has been approved. Here are the details:\n\n"""
@@ -639,37 +632,6 @@ def generate_email_body(ticket, status_comment=None):
     body += "Please proceed to pay for the package to be subscribed using the QR code attached below. After that, kindly reply this email with the receipt that you received after completing the payment process.\n\n"
     body += "Thank you,\nIMCC Admin"
     return body
-
-
-# @app.route('/approveTicket/<int:ticket_id>', methods=['POST'])
-# @login_required
-# @admin_required
-# def review_ticket(ticket_id):
-#     data = request.form
-#     remarks = data.get('remarks')
-#     email_message = data.get('emailMessage')
-#     file = request.files.get('file')
-#     if file:
-#         print(f"Received file: {file.filename}")
-#     else:
-#         print("No file received")
-
-#     ticket = Tickets.query.get(ticket_id)
-#     if not ticket:
-#         return jsonify({"error": "Ticket not found"}), 404
-
-#     ticket.ticket_status = 'Pending Payment'
-#     ticket.status_comment = remarks
-#     db.session.commit()
-
-#     send_approval_email(ticket, email_message, file, remarks)
-
-#     try:
-#         db.session.commit()
-#         return jsonify({"message": "Ticket approved successfully"}), 200
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
 @app.route('/approveTicket/<int:ticket_id>', methods=['POST'])
@@ -727,14 +689,16 @@ def review_ticket(ticket_id):
 def send_approval_email(ticket, custom_message, file, status_comment):
     client_email = ticket.client.client_email
     subject = "IMCC Bantu 1-to-1 Notification"
+    sender_email = os.environ.get("MAIL_USERNAME", "wannadzirahimccfyp@gmail.com")  # Use the configured MAIL_USERNAME or specify a default
 
-    body = custom_message if custom_message else generate_email_body(
+    body = custom_message if custom_message else generate_approval_email_body(
         ticket, status_comment)
 
     msg = Message(
         subject=subject,
         recipients=[client_email],
-        body=body
+        body=body,
+        sender=sender_email
     )
 
     if file and isinstance(file, FileStorage):
@@ -756,7 +720,7 @@ def get_email_template(ticket_id):
     if not ticket:
         return jsonify({"error": "Ticket not found"}), 404
 
-    email_template = generate_email_body(ticket)
+    email_template = generate_approval_email_body(ticket)
     return jsonify({"emailTemplate": email_template}), 200
 
 
@@ -857,14 +821,16 @@ def complete_ticket(ticket_id):
 def send_completion_email(ticket, custom_message, file):
     client_email = ticket.client.client_email
     subject = "IMCC Bantu 1-to-1 Notification"
+    sender_email = os.environ.get("MAIL_USERNAME", "wannadzirahimccfyp@gmail.com")  # Use the configured MAIL_USERNAME or specify a default
 
-    body = custom_message if custom_message else generate_email_body(
+    body = custom_message if custom_message else generate_approval_email_body(
         ticket)
 
     msg = Message(
         subject=subject,
         recipients=[client_email],
-        body=body
+        body=body,
+        sender=sender_email
     )
 
     if file and isinstance(file, FileStorage):
@@ -975,15 +941,17 @@ def reject_ticket(ticket_id):
 def send_rejection_email(ticket, updated_details, file, email_template):
     client_email = ticket.client.client_email
     subject = "IMCC Bantu 1-to-1 Ticket Update Notification"
+    sender_email = os.environ.get("MAIL_USERNAME", "wannadzirahimccfyp@gmail.com")  # Use the configured MAIL_USERNAME or specify a default
 
-    body = email_template if email_template else generate_email_body(
+    body = email_template if email_template else generate_approval_email_body(
         ticket)
     # body = generate_rejection_email_body(ticket)
 
     msg = Message(
         subject=subject,
         recipients=[client_email],
-        body=body
+        body=body,
+        sender=sender_email
     )
 
     if file and isinstance(file, FileStorage):

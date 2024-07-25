@@ -7,6 +7,7 @@ import ApprovalModal from "../components/ApprovalModal";
 import CompleteModal from "../components/CompleteModal";
 import EditTicketModal from "../components/EditModal";
 import EditModal from "../components/EditModal";
+import TicketActivationModal from "../components/TicketActivationModal";
 
 Modal.setAppElement("#root");
 
@@ -21,6 +22,7 @@ const TicketManagement = (props) => {
     const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+    const [isTicketActivationModalOpen, setIsTicketActivationModalOpen] = useState(false);
     const [selectedTicketId, setSelectedTicketId] = useState(null);
 
     useEffect(() => {
@@ -198,25 +200,60 @@ const TicketManagement = (props) => {
         }
     };
 
-    const handleActivate = async (ticketId) => {
-        const confirmActivation = window.confirm(
-            "Are you sure you want to activate this ticket?"
+    // const handleActivate = async (ticketId) => {
+    //     const confirmActivation = window.confirm(
+    //         "Are you sure you want to activate this ticket?"
+    //     );
+    //     if (confirmActivation) {
+    //         try {
+    //             await axios.post(
+    //                 `${apiUrl}/activateTicket/${ticketId}`,
+    //                 {},
+    //                 {
+    //                     withCredentials: true,
+    //                 }
+    //             );
+    //             fetchTickets(); // Refresh the ticket list
+    //         } catch (error) {
+    //             console.error("Error activating ticket:", error);
+    //         }
+    //     }
+    // };
+
+    const handleTicketActivationSubmit = async (ticketId, emailTemplate, file) => {
+        const confirmCompletion = window.confirm(
+            "Are you sure you want to set the status of this ticket to Active?"
         );
-        if (confirmActivation) {
+        if (confirmCompletion) {
+            const formData = new FormData();
+            formData.append("emailMessage", emailTemplate);
+            if (file) {
+                formData.append("file", file);
+            }
             try {
                 await axios.post(
                     `${apiUrl}/activateTicket/${ticketId}`,
-                    {},
+                    formData,
                     {
                         withCredentials: true,
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
                     }
                 );
-                fetchTickets(); // Refresh the ticket list
+                fetchTickets();
+                setIsTicketActivationModalOpen(false);
             } catch (error) {
-                console.error("Error activating ticket:", error);
+                console.error("Error approving ticket:", error);
             }
         }
     };
+
+    const handleActivate = (ticketId) => {
+        setSelectedTicketId(ticketId);
+        setIsTicketActivationModalOpen(true);
+    };
+
     const handleCancel = async (ticketId) => {
         const confirmCancel = window.confirm(
             "Are you sure you want to cancel this ticket?"
@@ -444,6 +481,14 @@ const TicketManagement = (props) => {
                     onRequestClose={() => setIsCompleteModalOpen(false)}
                     ticketId={selectedTicketId}
                     onSubmit={handleCompletionSubmit}
+                />
+            )}
+            {isTicketActivationModalOpen && (
+                <TicketActivationModal
+                    isOpen={isTicketActivationModalOpen}
+                    onRequestClose={() => setIsTicketActivationModalOpen(false)}
+                    ticketId={selectedTicketId}
+                    onSubmit={handleTicketActivationSubmit}
                 />
             )}
         </div>

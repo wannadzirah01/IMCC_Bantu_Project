@@ -3,12 +3,13 @@ import axios from "../api/axios";
 import "../Style.css";
 
 function NavBar({ userRole, setUserRole, userEmail, setUserEmail }) {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
 
     const handleLogout = async () => {
         try {
             await axios.post(
-                "http://localhost:5000/logout",
+                `${apiUrl}/logout`,
                 {},
                 { withCredentials: true }
             );
