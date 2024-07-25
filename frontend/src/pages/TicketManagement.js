@@ -11,6 +11,7 @@ import EditModal from "../components/EditModal";
 Modal.setAppElement("#root");
 
 const TicketManagement = (props) => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [tickets, setTickets] = useState([]);
     const [totalTickets, setTotalTickets] = useState(0);
     const [page, setPage] = useState(1);
@@ -29,7 +30,7 @@ const TicketManagement = (props) => {
     const fetchTickets = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:5000/getAllTickets",
+                `${apiUrl}/getAllTickets`,
                 {
                     withCredentials: true,
                     params: {
@@ -103,7 +104,7 @@ const TicketManagement = (props) => {
             }
             try {
                 await axios.post(
-                    `http://localhost:5000/approveTicket/${ticketId}`,
+                    `${apiUrl}/approveTicket/${ticketId}`,
                     formData,
                     {
                         withCredentials: true,
@@ -137,7 +138,7 @@ const TicketManagement = (props) => {
         if (confirmEdit) {
             try {
                 await axios.post(
-                    `http://localhost:5000/updateTicket/${ticketId}`,
+                    `${apiUrl}/updateTicket/${ticketId}`,
                     { details },
                     {
                         withCredentials: true,
@@ -180,7 +181,7 @@ const TicketManagement = (props) => {
             }
             try {
                 await axios.post(
-                    `http://localhost:5000/completeTicket/${ticketId}`,
+                    `${apiUrl}/completeTicket/${ticketId}`,
                     formData,
                     {
                         withCredentials: true,
@@ -204,7 +205,7 @@ const TicketManagement = (props) => {
         if (confirmActivation) {
             try {
                 await axios.post(
-                    `http://localhost:5000/activateTicket/${ticketId}`,
+                    `${apiUrl}/activateTicket/${ticketId}`,
                     {},
                     {
                         withCredentials: true,
@@ -223,7 +224,7 @@ const TicketManagement = (props) => {
         if (confirmCancel) {
             try {
                 await axios.post(
-                    `http://localhost:5000/cancelTicket/${ticketId}`,
+                    `${apiUrl}/cancelTicket/${ticketId}`,
                     {},
                     {
                         withCredentials: true,

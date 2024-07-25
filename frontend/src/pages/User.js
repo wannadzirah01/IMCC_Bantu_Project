@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import "../User.css";
 
 const User = () => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [userData, setUserData] = useState(null);
     const [userRole, setUserRole] = useState("");
 
@@ -11,7 +12,7 @@ const User = () => {
         const fetchUserRole = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:5000/getUserDetails",
+                    `${apiUrl}/getUserDetails`,
                     { withCredentials: true }
                 );
                 setUserRole(response.data.role);
@@ -26,7 +27,7 @@ const User = () => {
     useEffect(() => {
         async function fetchUserProfile() {
             try {
-                const resp = await axios.get("http://localhost:5000/@me");
+                const resp = await axios.get(`${apiUrl}/@me`);
                 setUserData(resp.data);
             } catch (error) {
                 console.log("Not authenticated");

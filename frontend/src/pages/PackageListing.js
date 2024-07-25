@@ -4,6 +4,7 @@ import PackageFormModal from "../components/PackageFormModal";
 import "../PackageList.css"; // Ensure the path is correct
 
 function PackageList() {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [packages, setPackages] = useState([]);
     const [selectedPackageId, setSelectedPackageId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,7 +13,7 @@ function PackageList() {
         const fetchPackages = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:5000/packageListing",
+                    `${apiUrl}/packageListing`,
                     { withCredentials: true }
                 );
                 setPackages(response.data);

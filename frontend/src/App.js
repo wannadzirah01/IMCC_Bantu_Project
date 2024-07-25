@@ -15,13 +15,14 @@ import EditProfile from "./components/EditProfile";
 // import MatchingListing from "./pages/MatchingListing";
 
 const App = () => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [userRole, setUserRole] = useState("");
     const [userEmail, setUserEmail] = useState("");
 
     const fetchUserDetails = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:5000/getUserDetails",
+                `${apiUrl}/getUserDetails`,
                 { withCredentials: true }
             );
             setUserRole(response.data.role);

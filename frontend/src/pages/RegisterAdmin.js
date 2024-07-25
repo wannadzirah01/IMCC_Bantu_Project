@@ -4,6 +4,7 @@ import "../App.css";
 import "../RegisterAdmin.css";
 
 const RegisterAdmin = () => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
@@ -16,7 +17,7 @@ const RegisterAdmin = () => {
 
     const fetchAdmins = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/getAdmins", {
+            const response = await axios.get(`${apiUrl}/getAdmins`, {
                 withCredentials: true,
             });
             setAdmins(response.data);
@@ -29,7 +30,7 @@ const RegisterAdmin = () => {
         event.preventDefault();
         try {
             const response = await axios.post(
-                "http://localhost:5000/register",
+                `${apiUrl}/register`,
                 { email, password, name, phoneNumber },
                 { withCredentials: true }
             );

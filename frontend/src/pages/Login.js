@@ -4,6 +4,7 @@ import axios from "../api/axios";
 import "../App.css";
 
 const Login = ({ fetchUserDetails }) => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -12,14 +13,14 @@ const Login = ({ fetchUserDetails }) => {
         event.preventDefault();
         try {
             const response = await axios.post(
-                "http://localhost:5000/login",
+                `${apiUrl}/login`,
                 { email, password },
                 { withCredentials: true }
             );
             alert("Successful user login");
 
             const userRoleResponse = await axios.get(
-                "http://localhost:5000/getUserDetails",
+                `${apiUrl}/getUserDetails`,
                 { withCredentials: true }
             );
             fetchUserDetails(userRoleResponse.data.role);
