@@ -35,8 +35,8 @@ global_packages_which_includes_study_essential = [1, 4, 5, 6]
 
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
-app.config['UPLOAD_FOLDER'] = 'C:\\Users\\wanna\\IMCC_Bantu_Project\\upload'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+# app.config['UPLOAD_FOLDER'] = 'C:\\Users\\wanna\\IMCC_Bantu_Project\\upload'
+# app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 Session(app)
 
 
@@ -68,8 +68,8 @@ def add_admin():
         print(f"Admin {email} already exists.")
 
 
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+# if not os.path.exists(app.config['UPLOAD_FOLDER']):
+#     os.makedirs(app.config['UPLOAD_FOLDER'])
 
 bcrypt = Bcrypt(app)
 CORS(app, origins="http://localhost:3000", supports_credentials=True)
@@ -89,14 +89,13 @@ with app.app_context():
 #     MAIL_DEFAULT_SENDER='imccbantu@usm.my'
 # )
 
-app.config.update(
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=587,
-    MAIL_USE_TLS=True,
-    MAIL_USERNAME='wannadzirahimccfyp@gmail.com',
-    MAIL_PASSWORD='qminnnawxfzotlcx',
-    MAIL_DEFAULT_SENDER='imccbantu@usm.my'
-)
+# app.config.update(
+#     MAIL_SERVER='smtp.gmail.com',
+#     MAIL_PORT=587,
+#     MAIL_USE_TLS=True,
+#     MAIL_USERNAME='wannadzirahimccfyp@gmail.com',
+#     MAIL_PASSWORD='qminnnawxfzotlcx'
+# )
 
 mail = Mail(app)
 
